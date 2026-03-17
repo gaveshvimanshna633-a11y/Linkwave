@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MovieHub PRO</title>
+
 <style>
 body{
 background:#0b0b0f;
@@ -11,6 +12,7 @@ color:white;
 font-family:Arial;
 margin:0;
 }
+
 header{
 padding:15px;
 background:#111;
@@ -18,28 +20,40 @@ display:flex;
 justify-content:space-between;
 align-items:center;
 }
+
 h1{color:#00ffcc;margin:0;}
+
 input{
 padding:8px;
 border-radius:8px;
 border:none;
 width:150px;
 }
+
 .container{
 display:grid;
 grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
 gap:15px;
 padding:15px;
 }
+
 .card{
 background:#111;
 border-radius:10px;
 overflow:hidden;
 transition:0.3s;
 }
+
 .card:hover{transform:scale(1.05);}
-.card img{width:100%;height:220px;object-fit:cover;}
+
+.card img{
+width:100%;
+height:220px;
+object-fit:cover;
+}
+
 .card-body{padding:10px;}
+
 button{
 margin-top:5px;
 padding:6px;
@@ -49,24 +63,42 @@ background:#00ffcc;
 cursor:pointer;
 width:100%;
 }
+
+/* PLAYER */
 #playerContainer{
 position:fixed;
-top:0;left:0;width:100%;height:100%;
-background:rgba(0,0,0,0.9);
+top:0;left:0;
+width:100%;height:100%;
+background:rgba(0,0,0,0.95);
 display:none;
-justify-content:center;align-items:center;
+justify-content:center;
+align-items:center;
 flex-direction:column;
 z-index:9999;
 }
+
+#playerContainer video,
 #playerContainer iframe{
-width:80%;height:60%;
-border:none;border-radius:10px;
+width:90%;
+max-width:800px;
+height:60%;
+border:none;
+border-radius:10px;
 }
-#closeBtn{
-margin-top:10px;padding:8px 12px;background:#00ffcc;color:black;border:none;border-radius:8px;cursor:pointer;
+
+.closeBtn{
+margin-top:10px;
+padding:10px;
+background:#00ffcc;
+color:black;
+border:none;
+border-radius:8px;
+cursor:pointer;
 }
 </style>
+
 </head>
+
 <body>
 
 <header>
@@ -76,18 +108,16 @@ margin-top:10px;padding:8px 12px;background:#00ffcc;color:black;border:none;bord
 
 <div class="container" id="movies"></div>
 
-<!-- Player Modal -->
-<div id="playerContainer">
-<iframe id="player" src="" allowfullscreen></iframe>
-<button id="closeBtn" onclick="closePlayer()">Close</button>
-</div>
+<!-- PLAYER -->
+<div id="playerContainer"></div>
 
 <script>
+
 let movieList = [
 {
 title:"Big Buck Bunny",
 img:"https://peach.blender.org/wp-content/uploads/title_anouncement.jpg",
-watch:"https://ssiisnsksksnsjsksk-pissek2.hf.space/api/stream/secure/69b8c1215a0c8f4b062dab01/1000174970.mp4",
+watch:"https://www.youtube.com/embed/YE7VzlLtp-4",
 download:"https://peach.blender.org/download/"
 },
 {
@@ -97,16 +127,17 @@ watch:"https://www.youtube.com/embed/eRsGyueVLvQ",
 download:"https://durian.blender.org/download/"
 },
 {
-title:"Tears of Steel",
-img:"https://mango.blender.org/wp-content/uploads/2013/09/hero.jpg",
-watch:"https://www.youtube.com/embed/R6MlUcmOul8",
-download:"https://mango.blender.org/download/"
+title:"Sample MP4",
+img:"https://via.placeholder.com/300x400",
+watch:"https://ssiisnsksksnsjsksk-pissek2.hf.space/api/stream/secure/69b8c1215a0c8f4b062dab01/1000174970.mp4",
+download:"https://ssiisnsksksnsjsksk-pissek2.hf.space/api/stream/secure/69b8c1215a0c8f4b062dab01/1000174970.mp4"
 }
 ];
 
 function loadMovies(list){
 let container = document.getElementById("movies");
 container.innerHTML = "";
+
 list.forEach(movie=>{
 container.innerHTML += `
 <div class="card">
@@ -128,20 +159,33 @@ loadMovies(filtered);
 }
 
 function openPlayer(url){
-let player = document.getElementById("player");
 let container = document.getElementById("playerContainer");
-player.src = url;
-container.style.display="flex";
+
+if(url.endsWith(".mp4")){
+container.innerHTML = `
+<video controls autoplay>
+<source src="${url}" type="video/mp4">
+</video>
+<button class="closeBtn" onclick="closePlayer()">Close</button>
+`;
+}else{
+container.innerHTML = `
+<iframe src="${url}?autoplay=1" allowfullscreen></iframe>
+<button class="closeBtn" onclick="closePlayer()">Close</button>
+`;
+}
+
+container.style.display = "flex";
 }
 
 function closePlayer(){
-let player = document.getElementById("player");
 let container = document.getElementById("playerContainer");
-player.src="";
-container.style.display="none";
+container.style.display = "none";
+container.innerHTML = "";
 }
 
 loadMovies(movieList);
+
 </script>
 
 </body>

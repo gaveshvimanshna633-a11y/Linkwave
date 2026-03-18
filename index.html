@@ -1,82 +1,117 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Game 🎮</title>
+<title>AI Logo Generator</title>
 
 <style>
 body{
-  margin:0;
-  background:#0d0d0d;
-  color:white;
-  text-align:center;
-  font-family:Arial;
+margin:0;
+font-family:Arial;
+background:#0b0b0f;
+color:white;
+text-align:center;
 }
 
-h1{
-  margin-top:20px;
+.container{
+padding:20px;
 }
 
-#score{
-  font-size:24px;
-  margin:10px;
+input, select{
+padding:10px;
+margin:10px;
+border:none;
+border-radius:8px;
+width:200px;
 }
 
-#gameArea{
-  position:relative;
-  width:100%;
-  height:400px;
-  background:#111;
-  overflow:hidden;
+button{
+padding:10px 20px;
+border:none;
+border-radius:10px;
+background:#00ffcc;
+color:black;
+cursor:pointer;
+font-weight:bold;
 }
 
-.circle{
-  width:60px;
-  height:60px;
-  background:#ff4757;
-  border-radius:50%;
-  position:absolute;
-  cursor:pointer;
+.logo-box{
+margin-top:30px;
+padding:40px;
+border-radius:20px;
+background:#111;
+display:inline-block;
+min-width:250px;
+}
+
+.logo-text{
+font-size:30px;
+font-weight:bold;
 }
 </style>
+
 </head>
 
 <body>
 
-<h1>🎮 Tap Game</h1>
-<div id="score">Score: 0</div>
+<div class="container">
+<h1>🎨 AI Logo Generator</h1>
 
-<div id="gameArea"></div>
+<input type="text" id="name" placeholder="Enter your brand name">
+
+<br>
+
+<select id="color">
+<option value="#00ffcc">Neon Green</option>
+<option value="#ff0055">Red</option>
+<option value="#0099ff">Blue</option>
+<option value="#ffcc00">Yellow</option>
+</select>
+
+<br>
+
+<select id="style">
+<option value="bold">Bold</option>
+<option value="italic">Italic</option>
+<option value="normal">Normal</option>
+</select>
+
+<br>
+
+<button onclick="generateLogo()">Generate Logo</button>
+<button onclick="downloadLogo()">Download</button>
+
+<div class="logo-box" id="logo">
+<div class="logo-text" id="logoText">Your Logo</div>
+</div>
+
+</div>
 
 <script>
-let score = 0;
-let gameArea = document.getElementById("gameArea");
+function generateLogo(){
+let name = document.getElementById("name").value;
+let color = document.getElementById("color").value;
+let style = document.getElementById("style").value;
 
-function spawnCircle(){
-  let circle = document.createElement("div");
-  circle.classList.add("circle");
+let text = document.getElementById("logoText");
 
-  let x = Math.random() * (window.innerWidth - 60);
-  let y = Math.random() * 340;
-
-  circle.style.left = x + "px";
-  circle.style.top = y + "px";
-
-  circle.onclick = function(){
-    score++;
-    document.getElementById("score").innerText = "Score: " + score;
-    circle.remove();
-  }
-
-  gameArea.appendChild(circle);
-
-  setTimeout(()=>{
-    circle.remove();
-  }, 1000);
+text.innerText = name || "Your Logo";
+text.style.color = color;
+text.style.fontStyle = style;
 }
 
-setInterval(spawnCircle, 800);
+function downloadLogo(){
+html2canvas(document.getElementById("logo")).then(canvas => {
+let link = document.createElement("a");
+link.download = "logo.png";
+link.href = canvas.toDataURL();
+link.click();
+});
+}
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 </body>
 </html>

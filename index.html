@@ -1,117 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Logo Generator</title>
-
+<title>AI Tools</title>
 <style>
 body{
-margin:0;
-font-family:Arial;
-background:#0b0b0f;
-color:white;
-text-align:center;
+  background:#0f0f0f;
+  color:white;
+  text-align:center;
+  font-family:Arial;
+  padding:40px;
 }
-
-.container{
-padding:20px;
+input,button{
+  padding:10px;
+  margin:10px;
 }
-
-input, select{
-padding:10px;
-margin:10px;
-border:none;
-border-radius:8px;
-width:200px;
-}
-
-button{
-padding:10px 20px;
-border:none;
-border-radius:10px;
-background:#00ffcc;
-color:black;
-cursor:pointer;
-font-weight:bold;
-}
-
-.logo-box{
-margin-top:30px;
-padding:40px;
-border-radius:20px;
-background:#111;
-display:inline-block;
-min-width:250px;
-}
-
-.logo-text{
-font-size:30px;
-font-weight:bold;
+.card{
+  background:#1a1a1a;
+  padding:20px;
+  border-radius:10px;
+  margin-top:20px;
 }
 </style>
-
 </head>
-
 <body>
 
-<div class="container">
-<h1>🎨 AI Logo Generator</h1>
+<h1>🤖 AI Caption Generator</h1>
 
-<input type="text" id="name" placeholder="Enter your brand name">
-
+<input type="text" id="keyword" placeholder="Enter topic">
 <br>
+<button onclick="generate()">Generate</button>
 
-<select id="color">
-<option value="#00ffcc">Neon Green</option>
-<option value="#ff0055">Red</option>
-<option value="#0099ff">Blue</option>
-<option value="#ffcc00">Yellow</option>
-</select>
-
-<br>
-
-<select id="style">
-<option value="bold">Bold</option>
-<option value="italic">Italic</option>
-<option value="normal">Normal</option>
-</select>
-
-<br>
-
-<button onclick="generateLogo()">Generate Logo</button>
-<button onclick="downloadLogo()">Download</button>
-
-<div class="logo-box" id="logo">
-<div class="logo-text" id="logoText">Your Logo</div>
-</div>
-
-</div>
+<div id="result" class="card"></div>
 
 <script>
-function generateLogo(){
-let name = document.getElementById("name").value;
-let color = document.getElementById("color").value;
-let style = document.getElementById("style").value;
+function generate(){
 
-let text = document.getElementById("logoText");
+  let key = document.getElementById("keyword").value;
 
-text.innerText = name || "Your Logo";
-text.style.color = color;
-text.style.fontStyle = style;
-}
+  let captions = [
+    `🔥 ${key} එක next level!`,
+    `${key} mood today 😎`,
+    `No one can stop this ${key}!`,
+    `${key} vibes only ✨`,
+    `Living my best ${key} life 💯`
+  ];
 
-function downloadLogo(){
-html2canvas(document.getElementById("logo")).then(canvas => {
-let link = document.createElement("a");
-link.download = "logo.png";
-link.href = canvas.toDataURL();
-link.click();
-});
+  let random = captions[Math.floor(Math.random()*captions.length)];
+
+  document.getElementById("result").innerHTML = random;
 }
 </script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 </body>
 </html>

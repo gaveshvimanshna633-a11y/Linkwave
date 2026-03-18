@@ -1,53 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>AI Tools</title>
+<title>Sinhala Movie Info Generator</title>
 <style>
 body{
   background:#0f0f0f;
   color:white;
-  text-align:center;
   font-family:Arial;
+  text-align:center;
   padding:40px;
 }
 input,button{
   padding:10px;
   margin:10px;
+  width:250px;
 }
 .card{
   background:#1a1a1a;
   padding:20px;
   border-radius:10px;
   margin-top:20px;
+  text-align:left;
+  display:inline-block;
 }
 </style>
 </head>
 <body>
 
-<h1>🤖 AI Caption Generator</h1>
+<h1>🎬 Sinhala Movie Info Generator</h1>
 
-<input type="text" id="keyword" placeholder="Enter topic">
+<input type="text" id="moviename" placeholder="Enter movie name">
 <br>
-<button onclick="generate()">Generate</button>
+<button onclick="generate()">Generate Details</button>
 
 <div id="result" class="card"></div>
 
 <script>
 function generate(){
+  let name = document.getElementById("moviename").value || "Unknown Movie";
 
-  let key = document.getElementById("keyword").value;
-
-  let captions = [
-    `🔥 ${key} එක next level!`,
-    `${key} mood today 😎`,
-    `No one can stop this ${key}!`,
-    `${key} vibes only ✨`,
-    `Living my best ${key} life 💯`
+  let years = ["2023","2022","2021","2020","2019"];
+  let genres = ["Action","Comedy","Drama","Romance","Sci-Fi","Horror"];
+  let directors = ["Sunil Soma Peiris","Prasanna Vithanage","Jayantha Chandrasiri","Aruna Jayawardena"];
+  let casts = ["Roshan Ranawana","Pooja Umashankar","Ranjan Ramanayake","Chandani Seneviratne"];
+  let synopses = [
+    "මේක කියන කතාව අලුත් ආරම්භයක් ගැනයි.",
+    "ආදරය, පවුල සහ හරි/වැරදි තීරණ ගැන කතාවක්.",
+    "මෙම චිත්‍රපටය සිනමාගාරයේ අලුත්ම හරස්ම කතාවයි.",
+    "සහෘදයකු සහ විරුද්ධයා අතර අමුතු ගැටුමක්."
   ];
 
-  let random = captions[Math.floor(Math.random()*captions.length)];
+  let random = (arr) => arr[Math.floor(Math.random()*arr.length)];
 
-  document.getElementById("result").innerHTML = random;
+  let html = `
+    <h2>${name}</h2>
+    <b>Year:</b> ${random(years)}<br>
+    <b>Genre:</b> ${random(genres)}<br>
+    <b>Director:</b> ${random(directors)}<br>
+    <b>Cast:</b> ${random(casts)}, ${random(casts)}<br>
+    <b>Synopsis:</b> ${random(synopses)}
+  `;
+
+  document.getElementById("result").innerHTML = html;
 }
 </script>
 

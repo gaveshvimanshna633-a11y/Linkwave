@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sinhala Meme Generator 😂</title>
+<title>AI Caption Generator 🔥</title>
 
 <style>
 body{
   margin:0;
   font-family:Arial;
-  background:#0d0d0d;
+  background:#0b0b0b;
   color:white;
   text-align:center;
 }
@@ -19,22 +19,23 @@ body{
 }
 
 input, button{
-  padding:10px;
+  padding:12px;
   margin:10px;
   border:none;
   border-radius:8px;
 }
 
 button{
-  background:#ff4757;
+  background:#00a8ff;
   color:white;
   cursor:pointer;
 }
 
-canvas{
-  margin-top:20px;
-  max-width:100%;
-  border:2px solid #333;
+.card{
+  background:#111;
+  padding:15px;
+  margin:15px;
+  border-radius:10px;
 }
 </style>
 </head>
@@ -42,68 +43,59 @@ canvas{
 <body>
 
 <div class="container">
-  <h1>😂 Sinhala Meme Generator</h1>
+  <h1>🔥 AI Caption Generator</h1>
 
-  <input type="file" id="imageInput"><br>
-
-  <input type="text" id="topText" placeholder="උඩ Text"><br>
-  <input type="text" id="bottomText" placeholder="පහළ Text"><br>
-
-  <button onclick="generateMeme()">Generate Meme</button>
-  <button onclick="downloadMeme()">Download</button>
-
+  <input type="text" id="topic" placeholder="Type topic (love, sad, funny)">
   <br>
-  <canvas id="canvas"></canvas>
+  <button onclick="generate()">Generate</button>
+
+  <div id="result"></div>
 </div>
 
 <script>
-let canvas = document.getElementById("canvas");
-let ctx = canvas.getContext("2d");
-let image = new Image();
 
-document.getElementById("imageInput").addEventListener("change", function(e){
-  let file = e.target.files[0];
-  let reader = new FileReader();
+const captions = {
+  love: [
+    "ඔයා නැතිව ජීවිතේ blank වගේ 🥺❤️",
+    "Love කියන්නේ feeling එකක් නෙවෙයි... commitment එකක් 💍",
+    "ඔයා හිනාවෙද්දි මගේ ලෝකේ full වෙනවා 😍"
+  ],
+  sad: [
+    "හිනාවෙන් හිටියත් ඇතුලෙන් break වෙලා 💔",
+    "අපිට හොඳ වෙන්න හිතපු අයම hurt කරනවා 😔",
+    "Alone but still breathing 😶"
+  ],
+  funny: [
+    "Diet start කරන දවසටම kottu order 😭😂",
+    "Life set වෙන්නෙ නෑ... wifi signal වගේ 🥲",
+    "Exam eka kalin mathak wenne book open karaddi 🤣"
+  ]
+};
 
-  reader.onload = function(event){
-    image.src = event.target.result;
+function generate(){
+  let topic = document.getElementById("topic").value.toLowerCase();
+  let result = document.getElementById("result");
+
+  result.innerHTML = "";
+
+  if(captions[topic]){
+    captions[topic].forEach(text => {
+      result.innerHTML += `
+        <div class="card" onclick="copyText(this)">
+          ${text}
+        </div>
+      `;
+    });
+  } else {
+    result.innerHTML = "<p>No captions found 😢</p>";
   }
-  reader.readAsDataURL(file);
-});
-
-image.onload = function(){
-  canvas.width = image.width;
-  canvas.height = image.height;
-  ctx.drawImage(image,0,0);
 }
 
-function generateMeme(){
-  ctx.drawImage(image,0,0);
-
-  let topText = document.getElementById("topText").value;
-  let bottomText = document.getElementById("bottomText").value;
-
-  ctx.fillStyle = "white";
-  ctx.strokeStyle = "black";
-  ctx.lineWidth = 3;
-  ctx.textAlign = "center";
-
-  // Top Text
-  ctx.font = "40px Arial";
-  ctx.fillText(topText, canvas.width/2, 50);
-  ctx.strokeText(topText, canvas.width/2, 50);
-
-  // Bottom Text
-  ctx.fillText(bottomText, canvas.width/2, canvas.height - 20);
-  ctx.strokeText(bottomText, canvas.width/2, canvas.height - 20);
+function copyText(el){
+  navigator.clipboard.writeText(el.innerText);
+  alert("Copied 😎");
 }
 
-function downloadMeme(){
-  let link = document.createElement("a");
-  link.download = "meme.png";
-  link.href = canvas.toDataURL();
-  link.click();
-}
 </script>
 
 </body>

@@ -3,189 +3,107 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MovieHub PRO</title>
+<title>Sinhala Meme Generator 😂</title>
 
 <style>
 body{
-background:#0b0b0f;
-color:white;
-font-family:Arial;
-margin:0;
-}
-
-header{
-padding:15px;
-background:#111;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-h1{color:#00ffcc;margin:0;}
-
-input{
-padding:8px;
-border-radius:8px;
-border:none;
-width:150px;
+  margin:0;
+  font-family:Arial;
+  background:#0d0d0d;
+  color:white;
+  text-align:center;
 }
 
 .container{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
-gap:15px;
-padding:15px;
+  padding:20px;
 }
 
-.card{
-background:#111;
-border-radius:10px;
-overflow:hidden;
-transition:0.3s;
+input, button{
+  padding:10px;
+  margin:10px;
+  border:none;
+  border-radius:8px;
 }
-
-.card:hover{transform:scale(1.05);}
-
-.card img{
-width:100%;
-height:220px;
-object-fit:cover;
-}
-
-.card-body{padding:10px;}
 
 button{
-margin-top:5px;
-padding:6px;
-border:none;
-border-radius:6px;
-background:#00ffcc;
-cursor:pointer;
-width:100%;
+  background:#ff4757;
+  color:white;
+  cursor:pointer;
 }
 
-/* PLAYER */
-#playerContainer{
-position:fixed;
-top:0;left:0;
-width:100%;height:100%;
-background:rgba(0,0,0,0.95);
-display:none;
-justify-content:center;
-align-items:center;
-flex-direction:column;
-z-index:9999;
-}
-
-#playerContainer video,
-#playerContainer iframe{
-width:90%;
-max-width:800px;
-height:60%;
-border:none;
-border-radius:10px;
-}
-
-.closeBtn{
-margin-top:10px;
-padding:10px;
-background:#00ffcc;
-color:black;
-border:none;
-border-radius:8px;
-cursor:pointer;
+canvas{
+  margin-top:20px;
+  max-width:100%;
+  border:2px solid #333;
 }
 </style>
-
 </head>
 
 <body>
 
-<header>
-<h1>🎬 MovieHub PRO</h1>
-<input type="text" id="search" placeholder="Search..." onkeyup="searchMovie()">
-</header>
+<div class="container">
+  <h1>😂 Sinhala Meme Generator</h1>
 
-<div class="container" id="movies"></div>
+  <input type="file" id="imageInput"><br>
 
-<!-- PLAYER -->
-<div id="playerContainer"></div>
+  <input type="text" id="topText" placeholder="උඩ Text"><br>
+  <input type="text" id="bottomText" placeholder="පහළ Text"><br>
+
+  <button onclick="generateMeme()">Generate Meme</button>
+  <button onclick="downloadMeme()">Download</button>
+
+  <br>
+  <canvas id="canvas"></canvas>
+</div>
 
 <script>
+let canvas = document.getElementById("canvas");
+let ctx = canvas.getContext("2d");
+let image = new Image();
 
-let movieList = [
-{
-title:"Big Buck Bunny",
-img:"https://peach.blender.org/wp-content/uploads/title_anouncement.jpg",
-watch:"https://ssiisnsksksnsjsksk-pissek2.hf.space/api/stream/secure/69b8c1215a0c8f4b062dab01/1000174970.mp4",
-download:"https://peach.blender.org/download/"
-},
-{
-title:"Sintel",
-img:"https://download.blender.org/durian/trailer/sintel_trailer-480p.jpg",
-watch:"https://www.youtube.com/embed/eRsGyueVLvQ",
-download:"https://durian.blender.org/download/"
-},
-{
-title:"Sample MP4",
-img:"https://via.placeholder.com/300x400",
-watch:"https://ssiisnsksksnsjsksk-pissek2.hf.space/api/stream/secure/69b8c1215a0c8f4b062dab01/1000174970.mp4",
-download:"https://ssiisnsksksnsjsksk-pissek2.hf.space/api/stream/secure/69b8c1215a0c8f4b062dab01/1000174970.mp4"
-}
-];
+document.getElementById("imageInput").addEventListener("change", function(e){
+  let file = e.target.files[0];
+  let reader = new FileReader();
 
-function loadMovies(list){
-let container = document.getElementById("movies");
-container.innerHTML = "";
-
-list.forEach(movie=>{
-container.innerHTML += `
-<div class="card">
-<img src="${movie.img}">
-<div class="card-body">
-<h4>${movie.title}</h4>
-<button onclick="openPlayer('${movie.watch}')">▶ Watch</button>
-<button onclick="window.open('${movie.download}')">⬇ Download</button>
-</div>
-</div>
-`;
+  reader.onload = function(event){
+    image.src = event.target.result;
+  }
+  reader.readAsDataURL(file);
 });
+
+image.onload = function(){
+  canvas.width = image.width;
+  canvas.height = image.height;
+  ctx.drawImage(image,0,0);
 }
 
-function searchMovie(){
-let value = document.getElementById("search").value.toLowerCase();
-let filtered = movieList.filter(m => m.title.toLowerCase().includes(value));
-loadMovies(filtered);
+function generateMeme(){
+  ctx.drawImage(image,0,0);
+
+  let topText = document.getElementById("topText").value;
+  let bottomText = document.getElementById("bottomText").value;
+
+  ctx.fillStyle = "white";
+  ctx.strokeStyle = "black";
+  ctx.lineWidth = 3;
+  ctx.textAlign = "center";
+
+  // Top Text
+  ctx.font = "40px Arial";
+  ctx.fillText(topText, canvas.width/2, 50);
+  ctx.strokeText(topText, canvas.width/2, 50);
+
+  // Bottom Text
+  ctx.fillText(bottomText, canvas.width/2, canvas.height - 20);
+  ctx.strokeText(bottomText, canvas.width/2, canvas.height - 20);
 }
 
-function openPlayer(url){
-let container = document.getElementById("playerContainer");
-
-if(url.endsWith(".mp4")){
-container.innerHTML = `
-<video controls autoplay>
-<source src="${url}" type="video/mp4">
-</video>
-<button class="closeBtn" onclick="closePlayer()">Close</button>
-`;
-}else{
-container.innerHTML = `
-<iframe src="${url}?autoplay=1" allowfullscreen></iframe>
-<button class="closeBtn" onclick="closePlayer()">Close</button>
-`;
+function downloadMeme(){
+  let link = document.createElement("a");
+  link.download = "meme.png";
+  link.href = canvas.toDataURL();
+  link.click();
 }
-
-container.style.display = "flex";
-}
-
-function closePlayer(){
-let container = document.getElementById("playerContainer");
-container.style.display = "none";
-container.innerHTML = "";
-}
-
-loadMovies(movieList);
-
 </script>
 
 </body>

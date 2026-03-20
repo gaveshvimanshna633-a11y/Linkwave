@@ -1,7 +1,7 @@
 body {
   margin:0;
   font-family: Arial, sans-serif;
-  background: #111;
+  background:#111;
   color:white;
 }
 
@@ -13,69 +13,25 @@ body {
   padding: 15px 30px;
 }
 .header .logo span { color:#ff2e63; }
-.menu-btn {
-  background:#ff2e63;
-  padding:10px;
-  border-radius:50%;
-  cursor:pointer;
-}
+.menu-btn { background:#ff2e63; padding:10px; border-radius:50%; cursor:pointer; }
 
 /* HERO */
-.hero {
-  position:relative;
-}
-.hero img {
-  width:100%;
-  height:500px;
-  object-fit:cover;
-}
-.hero-overlay {
-  position:absolute;
-  bottom:50px;
-  left:50px;
-}
-.hero-overlay h2 {
-  font-size:2em;
-}
-.hero-overlay p { margin:10px 0; }
-.hero-overlay button {
-  padding:10px 20px;
-  background:#ff2e63;
-  border:none;
-  color:white;
-  border-radius:5px;
-  cursor:pointer;
-}
+.hero { position:relative; margin-bottom:20px; }
+.hero img { width:100%; height:500px; object-fit:cover; }
+.hero-overlay { position:absolute; bottom:50px; left:50px; }
+.hero-overlay h2 { font-size:2em; }
+.hero-overlay button { padding:10px 20px; background:#ff2e63; border:none; border-radius:5px; color:white; cursor:pointer; }
 
 /* MOVIE CAROUSEL */
 .movie-section { padding:20px; }
 .movie-section h3 { margin-bottom:10px; }
-.movie-carousel {
-  display:flex;
-  gap:10px;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-}
-.movie-card {
-  min-width:200px;
-  position:relative;
-  cursor:pointer;
-  transition: transform 0.3s;
-}
-.movie-card img {
-  width:100%;
-  border-radius:5px;
-}
-.movie-card:hover {
-  transform: scale(1.1);
-}
-.movie-card p {
-  position:absolute;
-  bottom:5px;
-  left:5px;
-  margin:0;
-  background:rgba(0,0,0,0.7);
-  padding:2px 5px;
-  border-radius:3px;
-  font-size:14px;
-}
+.movie-carousel { display:flex; gap:10px; overflow-x:auto; scroll-behavior: smooth; }
+.movie-card { min-width:200px; position:relative; cursor:pointer; transition: transform .3s; }
+.movie-card img { width:100%; border-radius:5px; }
+.movie-card:hover { transform:scale(1.1); }
+.movie-card p { position:absolute; bottom:5px; left:5px; margin:0; background:rgba(0,0,0,0.7); padding:2px 5px; border-radius:3px; font-size:14px; }
+
+/* ADMIN */
+.admin-panel { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; }
+.admin-form { background:#222; padding:20px; border-radius:8px; display:flex; flex-direction:column; gap:10px; }
+.close-admin { cursor:pointer; align-self:flex-end; font-size:20px; }

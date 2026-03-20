@@ -1,82 +1,115 @@
 body {
   margin: 0;
   font-family: Arial;
-  background: #141414;
+  background: #111;
   color: white;
 }
 
-/* Sidebar */
-.sidebar {
-  position: fixed;
-  width: 200px;
-  height: 100%;
-  background: black;
-  padding: 20px;
-  left: -200px;
-  transition: 0.3s;
-}
-
-.sidebar.active {
-  left: 0;
-}
-
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-}
-
-.sidebar li {
-  padding: 10px 0;
-  cursor: pointer;
-}
-
-/* Main */
-.main {
-  margin-left: 0;
-  transition: 0.3s;
-}
-
-/* Topbar */
-.topbar {
+/* HEADER */
+.header {
   display: flex;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
   padding: 15px;
-  background: black;
 }
-
-.topbar input {
-  flex: 1;
-  padding: 8px;
-}
-
-/* Hero */
-.hero {
-  height: 200px;
-  background: url("https://via.placeholder.com/800x200") center/cover;
+.logo {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 20px;
-}
-
-/* Movies Row */
-.row {
-  display: flex;
-  overflow-x: auto;
+  align-items: center;
   gap: 10px;
-  padding: 20px;
 }
-
-.movie {
-  min-width: 150px;
+.logo span { color: #ff2e63; }
+.menu-btn, .music-btn {
+  background: #ff2e63;
+  padding: 10px;
+  border-radius: 50%;
   cursor: pointer;
 }
 
-.movie img {
+/* SEARCH */
+.search-box { padding: 10px; }
+.search-box input {
   width: 100%;
-  border-radius: 5px;
+  padding: 12px;
+  border-radius: 25px;
+  border: 2px solid #ff2e63;
+  background: #111;
+  color: white;
 }
 
-.section-title {
-  padding-left: 20px;
+/* TABS */
+.tabs { display: flex; gap: 10px; padding: 10px; }
+.tabs button {
+  padding: 10px 15px;
+  border-radius: 20px;
+  border: 1px solid #555;
+  background: transparent;
+  color: white;
+  cursor: pointer;
 }
+.tabs .active { background: #ff2e63; }
+
+/* FEATURED */
+.featured {
+  margin: 15px;
+  border: 2px solid #ff2e63;
+  border-radius: 15px;
+  overflow: hidden;
+}
+.featured img { width: 100%; }
+.featured p { padding: 10px; }
+
+/* MOVIES GRID */
+.movies {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 10px;
+  padding: 10px;
+}
+.movie img { width: 100%; border-radius: 10px; }
+.movie p { text-align: center; font-size: 14px; }
+
+/* SIDE MENU */
+.side-menu {
+  position: fixed;
+  top: 0;
+  left: -250px;
+  width: 250px;
+  height: 100%;
+  background: #111;
+  transition: 0.3s;
+  padding: 20px;
+}
+.side-menu.active { left: 0; }
+.menu-item {
+  padding: 15px;
+  border: 1px solid #444;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.close-btn { text-align: right; cursor: pointer; margin-bottom: 20px; }
+
+/* ADMIN PANEL */
+.admin-panel {
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background: rgba(0,0,0,0.9);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+.panel-box {
+  background:#111; padding:20px; width:300px; border-radius:10px;
+}
+.panel-box input, .panel-box textarea {
+  width: 100%; padding:8px; margin:5px 0;
+  border-radius:5px; border:1px solid #444;
+  background:#222; color:white;
+}
+.panel-box button {
+  width:100%; padding:10px; margin-top:10px;
+  background:#ff2e63; border:none; color:white;
+  border-radius:10px; cursor:pointer;
+}
+.close-admin { text-align:right; cursor:pointer; margin-bottom:10px; }

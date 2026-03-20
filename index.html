@@ -4,19 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hiru ✘ Movie - Netflix Style</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- HEADER -->
 <header class="header">
-  <div class="logo">
-    <h1>Hiru ✘ <span>Subz</span></h1>
-  </div>
+  <div class="logo">Hiru ✘ <span>Subz</span></div>
   <div class="menu-btn" id="menuBtn">☰</div>
 </header>
 
-<!-- HERO / FEATURED -->
+<!-- HERO -->
 <section class="hero">
   <img src="https://via.placeholder.com/1200x500" alt="Featured Movie">
   <div class="hero-overlay">
@@ -29,40 +27,25 @@
 <!-- MOVIE CAROUSELS -->
 <section class="movie-section">
   <h3>Trending Now</h3>
-  <div class="movie-carousel" id="trendingCarousel">
-    <div class="movie-card">
-      <img src="https://via.placeholder.com/200x300">
-      <p>Movie 1</p>
-    </div>
-    <div class="movie-card">
-      <img src="https://via.placeholder.com/200x300">
-      <p>Movie 2</p>
-    </div>
-    <div class="movie-card">
-      <img src="https://via.placeholder.com/200x300">
-      <p>Movie 3</p>
-    </div>
-  </div>
+  <div class="movie-carousel" id="trendingCarousel"></div>
 </section>
 
 <section class="movie-section">
   <h3>New Releases</h3>
-  <div class="movie-carousel" id="newCarousel">
-    <div class="movie-card">
-      <img src="https://via.placeholder.com/200x300">
-      <p>Movie A</p>
-    </div>
-    <div class="movie-card">
-      <img src="https://via.placeholder.com/200x300">
-      <p>Movie B</p>
-    </div>
-    <div class="movie-card">
-      <img src="https://via.placeholder.com/200x300">
-      <p>Movie C</p>
-    </div>
-  </div>
+  <div class="movie-carousel" id="newCarousel"></div>
 </section>
 
+<!-- Admin Modal -->
+<div class="admin-panel" id="admin-panel">
+  <div class="admin-form">
+    <span class="close-admin" id="close-admin">✖</span>
+    <h3>Admin Login</h3>
+    <input type="password" id="admin-password" placeholder="Enter Admin Password">
+    <button id="admin-login">Login</button>
+  </div>
+</div>
+
+<script src="firebase-config.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

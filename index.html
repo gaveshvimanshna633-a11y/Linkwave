@@ -1,45 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>CINZZOON HUB</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CINZZOON HUB</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- Sidebar -->
-<div class="sidebar" id="sidebar">
-  <h2>CINZZOON</h2>
-  <ul>
-    <li class="active">Home</li>
-    <li>Movies</li>
-    <li>Series</li>
-    <li>My List</li>
-  </ul>
+<!-- HEADER -->
+<div class="header">
+  <div class="menu-btn" id="menuBtn">☰</div>
+  <div class="logo">
+    <img src="https://via.placeholder.com/40" alt="logo">
+    <h2>Hiru ✘ <span>Subz</span></h2>
+  </div>
+  <div class="music-btn">🎵</div>
 </div>
 
-<!-- Main -->
-<div class="main">
+<!-- SEARCH -->
+<div class="search-box">
+  <input type="text" placeholder="Search for movies..." id="searchInput">
+</div>
 
-  <!-- Topbar -->
-  <div class="topbar">
-    <button id="menuBtn">☰</button>
-    <input type="text" id="search" placeholder="Search...">
+<!-- TABS -->
+<div class="tabs">
+  <button class="active" data-cat="all">HOME</button>
+  <button data-cat="dubbed">SINHALA DUBBED</button>
+  <button data-cat="sub">WITH SUB</button>
+</div>
+
+<!-- FEATURED -->
+<div class="featured" id="featured">
+  <img src="https://via.placeholder.com/500x250" alt="featured">
+  <p>Black Panther Sinhala Subtitles</p>
+</div>
+
+<!-- MOVIES GRID -->
+<div class="movies" id="movies"></div>
+
+<!-- SIDE MENU -->
+<div class="side-menu" id="sideMenu">
+  <div class="close-btn" id="closeMenu">✖</div>
+  <div class="menu-item" id="adminBtnMenu">🔑 Admin</div>
+  <div class="menu-item">📞 Contact Owner</div>
+  <div class="menu-item">🔗 Media</div>
+  <div class="menu-item">🌙 Dark Mode</div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-panel" id="adminPanel">
+  <div class="panel-box">
+    <div class="close-admin" id="closeAdmin">✖</div>
+    <h2>Add New Movie</h2>
+    <input type="text" id="movieName" placeholder="Movie Name">
+    <input type="text" id="movieImg" placeholder="Movie Image URL">
+    <input type="text" id="movieYear" placeholder="Year">
+    <input type="text" id="movieLink" placeholder="Watch Link">
+    <textarea id="movieDesc" placeholder="Description"></textarea>
+    <button id="addMovieBtn">Add Movie</button>
   </div>
-
-  <!-- Hero Banner -->
-  <div class="hero">
-    <h1>Welcome to CINZZOON</h1>
-    <p>Watch Latest Movies</p>
-  </div>
-
-  <!-- Movie Section -->
-  <h2 class="section-title">Trending</h2>
-  <div class="row" id="movies"></div>
-
 </div>
 
 <script src="script.js"></script>
 </body>
-</html>
+  </html>

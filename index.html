@@ -2,215 +2,44 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>CINZZOON MOVIE HUB</title>
+  <title>CINZZOON HUB</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header>
-  <h1>CINZZOON MOVIE HUB</h1>
-  <input type="text" id="search" placeholder="Search movies...">
-  <button id="adminBtn">Admin</button>
-</header>
-
-<div class="movies" id="movies"></div>
-
-<!-- Movie Details -->
-<div class="details" id="details">
-  <div class="box">
-    <span id="close">X</span>
-    <img id="d-img">
-    <h2 id="d-title"></h2>
-    <p id="d-year"></p>
-    <p id="d-desc"></p>
-    <a id="d-link" target="_blank">Watch</a>
-  </div>
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+  <h2>CINZZOON</h2>
+  <ul>
+    <li class="active">Home</li>
+    <li>Movies</li>
+    <li>Series</li>
+    <li>My List</li>
+  </ul>
 </div>
 
-<!-- Admin Panel -->
-<div class="admin" id="admin">
-  <div class="box">
-    <h2>Admin Panel</h2>
-    <input id="name" placeholder="Movie Name">
-    <input id="img" placeholder="Image URL">
-    <input id="year" placeholder="Year">
-    <input id="link" placeholder="Watch Link">
-    <textarea id="desc" placeholder="Description"></textarea>
-    <button id="add">Add Movie</button>
-    <button id="closeAdmin">Close</button>
+<!-- Main -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <button id="menuBtn">☰</button>
+    <input type="text" id="search" placeholder="Search...">
   </div>
+
+  <!-- Hero Banner -->
+  <div class="hero">
+    <h1>Welcome to CINZZOON</h1>
+    <p>Watch Latest Movies</p>
+  </div>
+
+  <!-- Movie Section -->
+  <h2 class="section-title">Trending</h2>
+  <div class="row" id="movies"></div>
+
 </div>
 
 <script src="script.js"></script>
 </body>
-</html>   <div class="form-group">
-                <label class="form-label">Category</label>
-                <select class="form-select" id="edit-movie-category">
-                    <option value="sinhala-dubbed">Sinhala Dubbed</option>
-                    <option value="sinhala-sub">With Sinhala Sub</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">1080p Download Link</label>
-                <input type="text" class="form-input" id="edit-movie-1080p" placeholder="Enter 1080p download link">
-            </div>
-            <div class="form-group">
-                <label class="form-label">720p Download Link</label>
-                <input type="text" class="form-input" id="edit-movie-720p" placeholder="Enter 720p download link">
-            </div>
-            <div class="form-group">
-                <label class="form-label">420p Download Link</label>
-                <input type="text" class="form-input" id="edit-movie-420p" placeholder="Enter 420p download link">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Watch Link</label>
-                <input type="text" class="form-input" id="edit-movie-watch" placeholder="Enter watch link">
-            </div>
-            <div class="form-actions">
-                <button class="submit-btn" id="update-movie">Update Movie</button>
-                <button class="cancel-btn" id="cancel-edit">Cancel</button>
-            </div>
-        </div>
-
-        <!-- Featured Movies Edit Form - UPDATED FOR 10 MOVIES -->
-        <div class="featured-edit-form" id="featured-edit-form">
-            <h3 style="color: var(--accent-color); text-align: center; margin-bottom: 15px;">Featured Movies Edit (10 Movies)</h3>
-            <p style="color: var(--text-color); opacity: 0.7; text-align: center; margin-bottom: 15px;">Select 10 movies for featured carousel</p>
-            
-            <!-- Generate 10 movie slots -->
-            <div id="featured-movie-slots">
-                <!-- Will be generated dynamically -->
-            </div>
-            
-            <div class="form-actions">
-                <button class="submit-btn" id="save-featured">Save Featured Movies</button>
-                <button class="cancel-btn" id="cancel-featured">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <header>
-        <div class="container header-content">
-            <div class="logo-container">
-                <div class="logo">
-                    <img src="https://files.catbox.moe/hp6dg8.jpg" alt="HIRU ✘ MOVIE Logo">
-                </div>
-                <div class="site-title">Hiru ✘ <span>Subz</span></div>
-            </div>
-            
-            <div class="search-container">
-                <input type="text" class="search-box" id="search-box" placeholder="Search for movies...">
-                <div class="search-icon">
-                    <i class="fas fa-search"></i>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <div class="container">
-        <div class="tabs-container">
-            <div class="tabs">
-                <div class="tab active" data-category="all">HOME</div>
-                <div class="tab" data-category="sinhala-dubbed">SINHALA DUBBED</div>
-                <div class="tab" data-category="sinhala-sub">WITH SINHALA SUB</div>
-            </div>
-        </div>
-
-        <!-- Featured Movies Carousel -->
-        <div class="featured-carousel" id="featured-carousel">
-            <div class="theme-frame"></div>
-            <div class="tv-screen">
-                <div class="carousel-track" id="carousel-track">
-                    <!-- Slides will be dynamically added here -->
-                </div>
-            </div>
-        </div>
-
-        <div class="loading-spinner" id="loading-spinner">
-            <div class="spinner"></div>
-            <p>Loading movies...</p>
-        </div>
-
-        <div class="movies-grid" id="movies-grid">
-        </div>
-    </div>
-
-    <div class="container" id="movie-details-section">
-        <div class="details-header">
-            <h2 id="details-title"></h2>
-            <div class="close-details-btn" id="close-details-btn"><i class="fas fa-times"></i></div>
-        </div>
-        <div class="details-content">
-            <div class="details-poster-container">
-                <img src="" alt="Movie Poster" class="details-poster" id="details-poster">
-            </div>
-            <div class="details-info-box">
-                <p id="details-year"></p>
-                <p id="details-genre"></p>
-                <p id="details-duration"></p>
-                <p id="details-rating"></p>
-                <p id="details-views"></p>
-            </div>
-            <p id="details-description"></p>
-            <div class="details-actions">
-                <a href="" target="_blank" class="action-btn" id="download-btn-1">
-                    <i class="fas fa-download"></i> <span id="download-text-1">1080P</span>
-                </a>
-                <a href="" target="_blank" class="action-btn" id="download-btn-2">
-                    <i class="fas fa-download"></i> <span id="download-text-2">720P</span>
-                </a>
-                <button class="action-btn" id="trailer-btn">
-                    <i class="fas fa-play"></i> Watch Trailer
-                </button>
-                <button class="action-btn" id="watch-btn">
-                    <i class="fas fa-film"></i> Online Watch
-                </button>
-            </div>
-            <div class="trailer-box hidden" id="trailer-box">
-                <h3>Trailer</h3>
-                <div class="trailer-container">
-                    <div class="loading" id="trailer-loading">Loading trailer...</div>
-                    <iframe class="trailer-player" id="trailer-player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                </div>
-            </div>
-            <div class="watch-box hidden" id="watch-box">
-                <h3>Watch Online</h3>
-                <div class="video-container">
-                    <div class="loading" id="video-loading">LOADING VIDEO WAIT 1 A MINUTE</div>
-                    <video class="video-player" id="video-player" controls></video>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <footer>
-        <div class="container footer-content">
-            <div class="footer-logo">HIRU ✘ <span>MOVIE</span></div>
-            <p>The Best Movie Web</p>
-            <p class="copyright">© 2026 HIRU ✘ </p>
-        </div>
-    </footer>
-
-    <!-- Admin Panel -->
-    <div class="admin-panel" id="admin-panel">
-        <div class="admin-form">
-            <div class="close-admin" id="close-admin"><i class="fas fa-times"></i></div>
-            <h3>Admin Login</h3>
-            <input type="password" class="admin-input" id="admin-password" placeholder="Enter Admin Password">
-            <div id="password-error" style="color: #ff6b6b; font-size: 14px; margin-bottom: 10px; display: none;">Wrong Password</div>
-            <button class="admin-btn" id="admin-login">Login</button>
-        </div>
-    </div>
-
-    <!-- Admin Status Indicator -->
-    <div class="admin-status" id="admin-status">
-        <i class="fas fa-user-shield"></i>
-        <span id="admin-status-text">Admin Mode Active</span>
-    </div>
-
-    <!-- Local Scripts -->
-    <script src="firebase-config.js"></script>
-    <script src="script.js"></script>
-</body>
-          </html>
+</html>

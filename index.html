@@ -1,69 +1,371 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Sinhala Movie Info Generator</title>
-<style>
-body{
-  background:#0f0f0f;
-  color:white;
-  font-family:Arial;
-  text-align:center;
-  padding:40px;
-}
-input,button{
-  padding:10px;
-  margin:10px;
-  width:250px;
-}
-.card{
-  background:#1a1a1a;
-  padding:20px;
-  border-radius:10px;
-  margin-top:20px;
-  text-align:left;
-  display:inline-block;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIRU ✘ MOVIE - Your Ultimate Movie Destination</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://files.catbox.moe/hp6dg8.jpg" type="image/x-icon">
+    <link rel="shortcut icon" href="https://files.catbox.moe/hp6dg8.jpg" type="image/x-icon">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+    
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Music Player -->
+    <div class="music-player-container">
+        <audio id="bg-music" loop>
+            <source src="https://files.catbox.moe/6b2htn.m4a" type="audio/mp4">
+        </audio>
+        <button class="music-toggle-btn" id="music-toggle">
+            <i class="fas fa-music"></i>
+        </button>
+    </div>
 
-<h1>🎬 Sinhala Movie Info Generator</h1>
+    <div class="side-menu-toggle">
+        <i class="fas fa-bars"></i>
+    </div>
 
-<input type="text" id="moviename" placeholder="Enter movie name">
-<br>
-<button onclick="generate()">Generate Details</button>
+    <div class="side-menu">
+        <div class="side-menu-close">
+            <i class="fas fa-times"></i>
+        </div>
+        <div class="side-menu-item" id="contact-item">
+            <i class="fas fa-phone-alt"></i> Contact Owner
+        </div>
+        <div class="side-menu-item" id="media-item">
+            <i class="fas fa-share-alt"></i> Media
+        </div>
+        <div class="side-menu-item" id="theme-toggle">
+            <i class="fas fa-moon"></i> Dark/Bright Mode
+        </div>
+        <div class="side-menu-item" id="admin-btn">
+            <i class="fas fa-key"></i> Admin Password
+        </div>
+        
+        <!-- Web Color Options (Shown only when admin is logged in) -->
+        <div class="web-color-options" id="web-color-options">
+            <button class="web-color-option dark-red" data-theme="dark-red">
+                <i class="fas fa-palette"></i> Dark Red
+            </button>
+            <button class="web-color-option rose" data-theme="rose">
+                <i class="fas fa-palette"></i> Rose
+            </button>
+            <button class="web-color-option blue" data-theme="blue">
+                <i class="fas fa-palette"></i> Blue
+            </button>
+            <button class="web-color-option yellow" data-theme="yellow">
+                <i class="fas fa-palette"></i> Yellow
+            </button>
+            <button class="web-color-option green" data-theme="green">
+                <i class="fas fa-palette"></i> Green
+            </button>
+            <button class="web-color-option dark-rose" data-theme="dark-rose">
+                <i class="fas fa-palette"></i> Dark Rose
+            </button>
+        </div>
+        
+        <div class="social-buttons" id="social-buttons">
+            <a href="https://www.tiktok.com/@hiruxslowed?_r=1&_t=ZS-91oXHDlnKsL" target="_blank" class="social-btn youtube">
+                <i class="fab fa-youtube"></i> YouTube
+            </a>
+            <a href="https://www.tiktok.com/@hiruxslowed?_r=1&_t=ZS-91oXHDlnKsL" target="_blank" class="social-btn tiktok">
+                <i class="fab fa-tiktok"></i> TikTok
+            </a>
+            <a href="https://www.tiktok.com/@hiruxslowed?_r=1&_t=ZS-91oXHDlnKsL" target="_blank" class="social-btn website">
+                <i class="fas fa-globe"></i> Main Website
+            </a>
+        </div>
+        
+        <div class="admin-actions" id="admin-actions">
+            <button class="admin-action-btn" id="delete-movie-btn">
+                <i class="fas fa-trash"></i> Delete Movie Mode
+            </button>
+            <button class="admin-action-btn" id="add-movie-btn">
+                <i class="fas fa-plus"></i> Add Movie
+            </button>
+            <button class="admin-action-btn" id="edit-movie-btn">
+                <i class="fas fa-edit"></i> Edit Movie Mode
+            </button>
+            <button class="admin-action-btn" id="featured-edit-btn">
+                <i class="fas fa-star"></i> Featured Movies Edit
+            </button>
+            <button class="admin-action-btn" id="web-color-btn">
+                <i class="fas fa-palette"></i> Web Color
+            </button>
+            <button class="admin-action-btn" id="logout-admin-btn">
+                <i class="fas fa-sign-out-alt"></i> Logout Admin
+            </button>
+        </div>
+        
+        <div class="add-movie-form" id="add-movie-form">
+            <div class="form-group">
+                <label class="form-label">Movie Name</label>
+                <input type="text" class="form-input" id="movie-name" placeholder="Enter movie name">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Movie Banner URL</label>
+                <input type="text" class="form-input" id="movie-banner" placeholder="Enter banner URL">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Year</label>
+                <input type="number" class="form-input" id="movie-year" placeholder="Enter year">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Genre</label>
+                <input type="text" class="form-input" id="movie-genre" placeholder="Enter genre">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Duration</label>
+                <input type="text" class="form-input" id="movie-duration" placeholder="Enter duration">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Rating</label>
+                <input type="text" class="form-input" id="movie-rating" placeholder="Enter rating">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="form-textarea" id="movie-description" placeholder="Enter description"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Trailer Link (YouTube URL)</label>
+                <input type="text" class="form-input" id="movie-trailer" placeholder="Enter YouTube trailer URL">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                <select class="form-select" id="movie-category">
+                    <option value="sinhala-dubbed">Sinhala Dubbed</option>
+                    <option value="sinhala-sub">With Sinhala Sub</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">1080p Download Link</label>
+                <input type="text" class="form-input" id="movie-1080p" placeholder="Enter 1080p download link">
+            </div>
+            <div class="form-group">
+                <label class="form-label">720p Download Link</label>
+                <input type="text" class="form-input" id="movie-720p" placeholder="Enter 720p download link">
+            </div>
+            <div class="form-group">
+                <label class="form-label">420p Download Link</label>
+                <input type="text" class="form-input" id="movie-420p" placeholder="Enter 420p download link">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Watch Link</label>
+                <input type="text" class="form-input" id="movie-watch" placeholder="Enter watch link">
+            </div>
+            <div class="form-actions">
+                <button class="submit-btn" id="submit-movie">Save Movie</button>
+                <button class="cancel-btn" id="cancel-movie">Cancel</button>
+            </div>
+        </div>
 
-<div id="result" class="card"></div>
+        <div class="edit-movie-form" id="edit-movie-form">
+            <div class="form-group">
+                <label class="form-label">Movie Name</label>
+                <input type="text" class="form-input" id="edit-movie-name" placeholder="Enter movie name">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Movie Banner URL</label>
+                <input type="text" class="form-input" id="edit-movie-banner" placeholder="Enter banner URL">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Year</label>
+                <input type="number" class="form-input" id="edit-movie-year" placeholder="Enter year">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Genre</label>
+                <input type="text" class="form-input" id="edit-movie-genre" placeholder="Enter genre">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Duration</label>
+                <input type="text" class="form-input" id="edit-movie-duration" placeholder="Enter duration">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Rating</label>
+                <input type="text" class="form-input" id="edit-movie-rating" placeholder="Enter rating">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="form-textarea" id="edit-movie-description" placeholder="Enter description"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Trailer Link (YouTube URL)</label>
+                <input type="text" class="form-input" id="edit-movie-trailer" placeholder="Enter YouTube trailer URL">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                <select class="form-select" id="edit-movie-category">
+                    <option value="sinhala-dubbed">Sinhala Dubbed</option>
+                    <option value="sinhala-sub">With Sinhala Sub</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">1080p Download Link</label>
+                <input type="text" class="form-input" id="edit-movie-1080p" placeholder="Enter 1080p download link">
+            </div>
+            <div class="form-group">
+                <label class="form-label">720p Download Link</label>
+                <input type="text" class="form-input" id="edit-movie-720p" placeholder="Enter 720p download link">
+            </div>
+            <div class="form-group">
+                <label class="form-label">420p Download Link</label>
+                <input type="text" class="form-input" id="edit-movie-420p" placeholder="Enter 420p download link">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Watch Link</label>
+                <input type="text" class="form-input" id="edit-movie-watch" placeholder="Enter watch link">
+            </div>
+            <div class="form-actions">
+                <button class="submit-btn" id="update-movie">Update Movie</button>
+                <button class="cancel-btn" id="cancel-edit">Cancel</button>
+            </div>
+        </div>
 
-<script>
-function generate(){
-  let name = document.getElementById("moviename").value || "Unknown Movie";
+        <!-- Featured Movies Edit Form - UPDATED FOR 10 MOVIES -->
+        <div class="featured-edit-form" id="featured-edit-form">
+            <h3 style="color: var(--accent-color); text-align: center; margin-bottom: 15px;">Featured Movies Edit (10 Movies)</h3>
+            <p style="color: var(--text-color); opacity: 0.7; text-align: center; margin-bottom: 15px;">Select 10 movies for featured carousel</p>
+            
+            <!-- Generate 10 movie slots -->
+            <div id="featured-movie-slots">
+                <!-- Will be generated dynamically -->
+            </div>
+            
+            <div class="form-actions">
+                <button class="submit-btn" id="save-featured">Save Featured Movies</button>
+                <button class="cancel-btn" id="cancel-featured">Cancel</button>
+            </div>
+        </div>
+    </div>
 
-  let years = ["2023","2022","2021","2020","2019"];
-  let genres = ["Action","Comedy","Drama","Romance","Sci-Fi","Horror"];
-  let directors = ["Sunil Soma Peiris","Prasanna Vithanage","Jayantha Chandrasiri","Aruna Jayawardena"];
-  let casts = ["Roshan Ranawana","Pooja Umashankar","Ranjan Ramanayake","Chandani Seneviratne"];
-  let synopses = [
-    "මේක කියන කතාව අලුත් ආරම්භයක් ගැනයි.",
-    "ආදරය, පවුල සහ හරි/වැරදි තීරණ ගැන කතාවක්.",
-    "මෙම චිත්‍රපටය සිනමාගාරයේ අලුත්ම හරස්ම කතාවයි.",
-    "සහෘදයකු සහ විරුද්ධයා අතර අමුතු ගැටුමක්."
-  ];
+    <header>
+        <div class="container header-content">
+            <div class="logo-container">
+                <div class="logo">
+                    <img src="https://files.catbox.moe/hp6dg8.jpg" alt="HIRU ✘ MOVIE Logo">
+                </div>
+                <div class="site-title">Hiru ✘ <span>Subz</span></div>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" class="search-box" id="search-box" placeholder="Search for movies...">
+                <div class="search-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+        </div>
+    </header>
 
-  let random = (arr) => arr[Math.floor(Math.random()*arr.length)];
+    <div class="container">
+        <div class="tabs-container">
+            <div class="tabs">
+                <div class="tab active" data-category="all">HOME</div>
+                <div class="tab" data-category="sinhala-dubbed">SINHALA DUBBED</div>
+                <div class="tab" data-category="sinhala-sub">WITH SINHALA SUB</div>
+            </div>
+        </div>
 
-  let html = `
-    <h2>${name}</h2>
-    <b>Year:</b> ${random(years)}<br>
-    <b>Genre:</b> ${random(genres)}<br>
-    <b>Director:</b> ${random(directors)}<br>
-    <b>Cast:</b> ${random(casts)}, ${random(casts)}<br>
-    <b>Synopsis:</b> ${random(synopses)}
-  `;
+        <!-- Featured Movies Carousel -->
+        <div class="featured-carousel" id="featured-carousel">
+            <div class="theme-frame"></div>
+            <div class="tv-screen">
+                <div class="carousel-track" id="carousel-track">
+                    <!-- Slides will be dynamically added here -->
+                </div>
+            </div>
+        </div>
 
-  document.getElementById("result").innerHTML = html;
-}
-</script>
+        <div class="loading-spinner" id="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading movies...</p>
+        </div>
 
+        <div class="movies-grid" id="movies-grid">
+        </div>
+    </div>
+
+    <div class="container" id="movie-details-section">
+        <div class="details-header">
+            <h2 id="details-title"></h2>
+            <div class="close-details-btn" id="close-details-btn"><i class="fas fa-times"></i></div>
+        </div>
+        <div class="details-content">
+            <div class="details-poster-container">
+                <img src="" alt="Movie Poster" class="details-poster" id="details-poster">
+            </div>
+            <div class="details-info-box">
+                <p id="details-year"></p>
+                <p id="details-genre"></p>
+                <p id="details-duration"></p>
+                <p id="details-rating"></p>
+                <p id="details-views"></p>
+            </div>
+            <p id="details-description"></p>
+            <div class="details-actions">
+                <a href="" target="_blank" class="action-btn" id="download-btn-1">
+                    <i class="fas fa-download"></i> <span id="download-text-1">1080P</span>
+                </a>
+                <a href="" target="_blank" class="action-btn" id="download-btn-2">
+                    <i class="fas fa-download"></i> <span id="download-text-2">720P</span>
+                </a>
+                <button class="action-btn" id="trailer-btn">
+                    <i class="fas fa-play"></i> Watch Trailer
+                </button>
+                <button class="action-btn" id="watch-btn">
+                    <i class="fas fa-film"></i> Online Watch
+                </button>
+            </div>
+            <div class="trailer-box hidden" id="trailer-box">
+                <h3>Trailer</h3>
+                <div class="trailer-container">
+                    <div class="loading" id="trailer-loading">Loading trailer...</div>
+                    <iframe class="trailer-player" id="trailer-player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+            <div class="watch-box hidden" id="watch-box">
+                <h3>Watch Online</h3>
+                <div class="video-container">
+                    <div class="loading" id="video-loading">LOADING VIDEO WAIT 1 A MINUTE</div>
+                    <video class="video-player" id="video-player" controls></video>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-logo">HIRU ✘ <span>MOVIE</span></div>
+            <p>The Best Movie Web</p>
+            <p class="copyright">© 2026 HIRU ✘ </p>
+        </div>
+    </footer>
+
+    <!-- Admin Panel -->
+    <div class="admin-panel" id="admin-panel">
+        <div class="admin-form">
+            <div class="close-admin" id="close-admin"><i class="fas fa-times"></i></div>
+            <h3>Admin Login</h3>
+            <input type="password" class="admin-input" id="admin-password" placeholder="Enter Admin Password">
+            <div id="password-error" style="color: #ff6b6b; font-size: 14px; margin-bottom: 10px; display: none;">Wrong Password</div>
+            <button class="admin-btn" id="admin-login">Login</button>
+        </div>
+    </div>
+
+    <!-- Admin Status Indicator -->
+    <div class="admin-status" id="admin-status">
+        <i class="fas fa-user-shield"></i>
+        <span id="admin-status-text">Admin Mode Active</span>
+    </div>
+
+    <!-- Local Scripts -->
+    <script src="firebase-config.js"></script>
+    <script src="script.js"></script>
 </body>
-</html>
+          </html>

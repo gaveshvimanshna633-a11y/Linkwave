@@ -1,0 +1,13 @@
+body {background:#0b0b0b;color:white;font-family:Arial;}
+header{display:flex;justify-content:space-between;padding:10px;}
+.logo{color:red;font-size:22px;animation:glow 1s infinite alternate;}
+@keyframes glow{from{ text-shadow:0 0 5px red;} to{ text-shadow:0 0 20px red;}}
+.side-menu{position:fixed;right:-260px;width:260px;height:100%;background:black;transition:.3s;padding:15px;}
+.side-menu.active{right:0;}
+.dropdown{display:none;}
+.movies{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.card img{width:100%;} .card:hover{transform:scale(1.05);}
+.slider{overflow:hidden;}
+.slides{display:flex;transition:.5s;}
+.whatsapp{position:fixed;bottom:20px;left:20px;background:green;padding:12px;border-radius:50%;}
+.genre-scroll{display:flex;overflow-x:auto;} .genre-scroll span{background:red;margin:5px;padding:5px 10px;cursor:pointer;}

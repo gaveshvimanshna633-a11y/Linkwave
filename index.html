@@ -1,174 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CINZZOON MOVIE HUB</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CINZZON - Movie Hub</title>
+<link rel="stylesheet" href="style.css">
 
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <style>
-    body { background:#000; color:#fff; }
-
-    .menu-open { transform: translateX(0); }
-    .menu-close { transform: translateX(100%); }
-
-    .fade { animation: fade 1s; }
-    @keyframes fade {
-      from {opacity:0.4;}
-      to {opacity:1;}
-    }
-  </style>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 </head>
-
 <body>
 
-<!-- ================= HEADER ================= -->
-<header class="flex justify-between items-center px-6 py-4 fixed w-full bg-black z-50">
-
-  <!-- LEFT -->
-  <div class="flex items-center gap-2">
-    <div class="w-8 h-8 bg-[#E50914] rounded"></div>
-    <h1 class="text-xl font-bold text-[#E50914]">CINZZOON</h1>
-  </div>
-
-  <!-- RIGHT MENU -->
-  <button id="menuBtn" class="text-2xl hover:text-[#E50914] transition">
-    ☰
-  </button>
-
+<!-- HEADER -->
+<header>
+  <div class="logo">🔥 CINZZON</div>
+  <div class="menu-btn" onclick="toggleMenu()">☰</div>
 </header>
 
-<!-- ================= MENU ================= -->
-<div id="menu"
-class="fixed top-0 right-0 w-full h-full bg-black flex flex-col items-center justify-center gap-6 text-xl transform menu-close transition duration-500 z-50">
+<!-- SIDE MENU -->
+<div id="sideMenu" class="side-menu">
+  <h3 onclick="toggleDropdown('genreList')">Genre ▼</h3>
+  <div id="genreList" class="dropdown">
+    <p onclick="filterGenre('Action')">Action</p>
+    <p onclick="filterGenre('Crime')">Crime</p>
+    <p onclick="filterGenre('Romantic')">Romantic</p>
+    <p onclick="filterGenre('Horror')">Horror</p>
+    <p onclick="filterGenre('Fantasy')">Fantasy</p>
+    <p onclick="filterGenre('18+')">18+</p>
+  </div>
 
-  <a href="#">Home</a>
-  <a href="#">Movies</a>
-  <a href="#">TV Shows</a>
-  <a href="#">Year</a>
-  <a href="#">Genre</a>
-  <a href="#">Admin Panel</a>
+  <h3 onclick="toggleDropdown('yearList')">Year ▼</h3>
+  <div id="yearList" class="dropdown"></div>
 
-  <button id="closeMenu" class="text-[#E50914] mt-6">Close</button>
-
+  <h3 onclick="location.href='movies.html'">Movies</h3>
+  <h3 onclick="location.href='tv.html'">TV Series</h3>
+  <h3 onclick="location.href='developer.html'">Developer</h3>
 </div>
 
-<!-- ================= HERO ================= -->
-<section class="mt-20 relative">
+<!-- SEARCH BAR -->
+<input type="text" id="search" placeholder="🔍 Search movies..." onkeyup="searchMovies()">
 
-  <div id="hero"
-  class="h-[70vh] bg-cover bg-center flex items-center px-10 fade">
-
-    <div class="max-w-lg">
-      <h2 id="title" class="text-4xl font-bold mb-4"></h2>
-      <p id="desc" class="mb-6"></p>
-      <button class="bg-[#E50914] px-6 py-2 rounded hover:bg-red-700">
-        Watch Now
-      </button>
-    </div>
-
+<!-- BANNER SLIDER -->
+<div class="slider">
+  <div class="slides">
+    <img src="https://via.placeholder.com/900x300">
+    <img src="https://via.placeholder.com/900x300/ff0000">
+    <img src="https://via.placeholder.com/900x300/000000">
   </div>
+</div>
 
-</section>
+<!-- GENRE SCROLL -->
+<div class="genre-scroll">
+  <span onclick="filterGenre('Action')">Action</span>
+  <span onclick="filterGenre('Crime')">Crime</span>
+  <span onclick="filterGenre('Romantic')">Romantic</span>
+  <span onclick="filterGenre('Horror')">Horror</span>
+  <span onclick="filterGenre('Fantasy')">Fantasy</span>
+  <span onclick="filterGenre('18+')">18+</span>
+</div>
 
-<!-- ================= GENRE ================= -->
-<section class="flex gap-4 overflow-x-auto p-4">
+<!-- MOVIE GRID -->
+<div id="movieList" class="movies"></div>
 
-  <button class="bg-[#E50914] px-4 py-2 rounded">Action</button>
-  <button class="bg-gray-800 px-4 py-2 rounded">Comedy</button>
-  <button class="bg-gray-800 px-4 py-2 rounded">Horror</button>
-  <button class="bg-gray-800 px-4 py-2 rounded">Sci-Fi</button>
-  <button class="bg-gray-800 px-4 py-2 rounded">Romance</button>
-  <button class="bg-gray-800 px-4 py-2 rounded">Thriller</button>
+<!-- WHATSAPP BUTTON -->
+<a href="https://wa.me/947XXXXXXXX" class="whatsapp">💬</a>
 
-</section>
-
-<!-- ================= MOVIE GRID ================= -->
-<section class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-
-  <!-- CARD -->
-  <div class="bg-gray-900 rounded overflow-hidden transform hover:scale-105 transition">
-    <img src="https://via.placeholder.com/300x400" class="w-full">
-    <h3 class="p-3">Movie 1</h3>
-  </div>
-
-  <div class="bg-gray-900 rounded overflow-hidden transform hover:scale-105 transition">
-    <img src="https://via.placeholder.com/300x400">
-    <h3 class="p-3">Movie 2</h3>
-  </div>
-
-  <div class="bg-gray-900 rounded overflow-hidden transform hover:scale-105 transition">
-    <img src="https://via.placeholder.com/300x400">
-    <h3 class="p-3">Movie 3</h3>
-  </div>
-
-  <div class="bg-gray-900 rounded overflow-hidden transform hover:scale-105 transition">
-    <img src="https://via.placeholder.com/300x400">
-    <h3 class="p-3">Movie 4</h3>
-  </div>
-
-  <div class="bg-gray-900 rounded overflow-hidden transform hover:scale-105 transition">
-    <img src="https://via.placeholder.com/300x400">
-    <h3 class="p-3">Movie 5</h3>
-  </div>
-
-  <div class="bg-gray-900 rounded overflow-hidden transform hover:scale-105 transition">
-    <img src="https://via.placeholder.com/300x400">
-    <h3 class="p-3">Movie 6</h3>
-  </div>
-
-</section>
-
-<!-- ================= JS ================= -->
-<script>
-
-  // MENU
-  const menu = document.getElementById("menu");
-  document.getElementById("menuBtn").onclick = () => {
-    menu.classList.remove("menu-close");
-    menu.classList.add("menu-open");
-  };
-  document.getElementById("closeMenu").onclick = () => {
-    menu.classList.remove("menu-open");
-    menu.classList.add("menu-close");
-  };
-
-  // HERO SLIDER
-  const slides = [
-    {
-      title: "Avengers: Endgame",
-      desc: "The Avengers assemble to undo Thanos.",
-      img: "https://images.unsplash.com/photo-1531259683007-016a7b628fc3"
-    },
-    {
-      title: "The Batman",
-      desc: "Dark Gotham mystery unfolds.",
-      img: "https://images.unsplash.com/photo-1502136969935-8d8eef54d77c"
-    },
-    {
-      title: "Interstellar",
-      desc: "Journey through space to save humanity.",
-      img: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa"
-    }
-  ];
-
-  let i = 0;
-
-  function slider() {
-    const hero = document.getElementById("hero");
-    document.getElementById("title").innerText = slides[i].title;
-    document.getElementById("desc").innerText = slides[i].desc;
-    hero.style.backgroundImage = `url(${slides[i].img})`;
-
-    i = (i + 1) % slides.length;
-  }
-
-  setInterval(slider, 4000);
-  slider();
-
-</script>
+<!-- SCRIPTS -->
+<script src="firebase.js"></script>
+<script src="script.js"></script>
 
 </body>
-        </html>
+</html>

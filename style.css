@@ -1,13 +1,84 @@
-body {background:#0b0b0b;color:white;font-family:Arial;}
-header{display:flex;justify-content:space-between;padding:10px;}
-.logo{color:red;font-size:22px;animation:glow 1s infinite alternate;}
-@keyframes glow{from{ text-shadow:0 0 5px red;} to{ text-shadow:0 0 20px red;}}
-.side-menu{position:fixed;right:-260px;width:260px;height:100%;background:black;transition:.3s;padding:15px;}
-.side-menu.active{right:0;}
-.dropdown{display:none;}
-.movies{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-.card img{width:100%;} .card:hover{transform:scale(1.05);}
-.slider{overflow:hidden;}
-.slides{display:flex;transition:.5s;}
-.whatsapp{position:fixed;bottom:20px;left:20px;background:green;padding:12px;border-radius:50%;}
-.genre-scroll{display:flex;overflow-x:auto;} .genre-scroll span{background:red;margin:5px;padding:5px 10px;cursor:pointer;}
+:root {
+    --primary-red: #E50914;
+    --dark-bg: #0a0a0a;
+    --white: #ffffff;
+}
+
+body {
+    margin: 0;
+    background-color: var(--dark-bg);
+    color: var(--white);
+    font-family: Arial, sans-serif;
+    overflow-x: hidden;
+}
+
+/* Logo Shimmer Animation */
+.logo-shimmer {
+    color: var(--primary-red);
+    font-size: 2rem;
+    background: linear-gradient(90deg, #ff0000, #ffffff, #ff0000);
+    background-size: 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 3s infinite;
+}
+
+@keyframes shine {
+    to { background-position: 200%; }
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 100;
+}
+
+/* Menu Animation */
+.side-menu {
+    position: fixed;
+    right: -300px;
+    top: 0;
+    width: 280px;
+    height: 100%;
+    background: #1a1a1a;
+    transition: 0.5s;
+    z-index: 1000;
+    padding-top: 60px;
+}
+
+.side-menu.active { right: 0; }
+
+.movie-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 movies per row */
+    gap: 15px;
+    padding: 20px;
+}
+
+.movie-card {
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+.movie-card:hover {
+    transform: scale(1.05);
+}
+
+.genre-scroll {
+    display: flex;
+    overflow-x: auto;
+    padding: 10px;
+    gap: 15px;
+    white-space: nowrap;
+}
+
+.genre-scroll span {
+    background: var(--primary-red);
+    padding: 5px 15px;
+    border-radius: 20px;
+}

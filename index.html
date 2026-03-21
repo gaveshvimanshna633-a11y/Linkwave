@@ -1214,21 +1214,78 @@
             </div>
         </div>
         
-<section id="community-comments" style="padding: 50px 5%; background: #111; border-top: 2px solid #e50914; color: white;">
-    <div style="max-width: 800px; margin: 0 auto;">
-        <h2 style="color: #e50914; margin-bottom: 25px; font-family: sans-serif;">Community Comments</h2>
+<div id="simple-comment-system" style="padding: 30px 5%; background: #111; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; border-top: 3px solid #e50914;">
+    <div style="max-width: 700px; margin: 0 auto;">
+        <h3 style="color: #e50914; margin-bottom: 20px; font-size: 24px;">අදහස් දක්වන්න (Comments)</h3>
         
-        <div style="margin-bottom: 30px; background: #222; padding: 20px; border-radius: 10px;">
-            <input type="text" id="user-name" placeholder="ඔයාගේ නම" style="width: 100%; padding: 10px; margin-bottom: 10px; background: #333; border: none; color: white; border-radius: 5px;">
-            <textarea id="user-comment" placeholder="අදහසක් දක්වන්න..." rows="3" style="width: 100%; padding: 10px; background: #333; border: none; color: white; border-radius: 5px;"></textarea>
-            <button onclick="sendComment()" style="margin-top: 10px; width: 100%; padding: 10px; background: #e50914; border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 5px;">Post Comment</button>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px;">
+            <input type="text" id="c_name" placeholder="ඔයාගේ නම..." style="padding: 12px; border-radius: 5px; border: 1px solid #333; background: #222; color: #fff; outline: none;">
+            <textarea id="c_msg" placeholder="අදහසක් ලියන්න..." style="padding: 12px; border-radius: 5px; border: 1px solid #333; background: #222; color: #fff; height: 80px; outline: none; resize: none;"></textarea>
+            <button onclick="addComment()" style="background: #e50914; color: #fff; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s;">Post Comment</button>
         </div>
 
-        <div id="comments-list" style="display: flex; flex-direction: column; gap: 15px;">
-            <p style="color: #888;">Loading comments...</p>
-        </div>
+        <div id="comment_list" style="display: flex; flex-direction: column; gap: 15px;">
+            </div>
     </div>
-</section>
+</div>
+
+<script>
+    // පරණ Comments Load කරමු
+    window.onload = function() {
+        displayComments();
+    };
+
+    function addComment() {
+        let name = document.getElementById('c_name').value;
+        let msg = document.getElementById('c_msg').value;
+
+        if (name == "" || msg == "") {
+            alert("කරුණාකර නම සහ comment එක ඇතුළත් කරන්න!");
+            return;
+        }
+
+        let commentData = {
+            username: name,
+            message: msg,
+            date: new Date().toLocaleString()
+        };
+
+        // LocalStorage එකේ Save කරමු (Browser එකේ save වෙලා තියෙයි)
+        let comments = localStorage.getItem("my_comments") ? JSON.parse(localStorage.getItem("my_comments")) : [];
+        comments.unshift(commentData); // අලුත් එක උඩටම දානවා
+        localStorage.setItem("my_comments", JSON.stringify(comments));
+
+        // Input boxes හිස් කරන්න
+        document.getElementById('c_name').value = "";
+        document.getElementById('c_msg').value = "";
+
+        displayComments();
+    }
+
+    function displayComments() {
+        let list = document.getElementById('comment_list');
+        let comments = localStorage.getItem("my_comments") ? JSON.parse(localStorage.getItem("my_comments")) : [];
+        
+        list.innerHTML = ""; // List එක clear කරන්න
+
+        if(comments.length === 0) {
+            list.innerHTML = "<p style='color: #666; text-align: center;'>තවම අදහස් කිසිවක් නැත.</p>";
+            return;
+        }
+
+        comments.forEach(function(item) {
+            list.innerHTML += `
+                <div style="background: #1a1a1a; padding: 15px; border-radius: 8px; border-left: 4px solid #e50914; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <strong style="color: #e50914;">${item.username}</strong>
+                        <small style="color: #555; font-size: 11px;">${item.date}</small>
+                    </div>
+                    <p style="margin: 0; color: #ddd; font-size: 14px; line-height: 1.5;">${item.message}</p>
+                </div>
+            `;
+        });
+    }
+</script>
         <!-- Video Player -->
         <section class="player-section">
             <h2 class="section-title">Watch Online</h2>

@@ -1213,79 +1213,7 @@
                 <p class="detail-description" id="detailDescription">Movie description goes here...</p>
             </div>
         </div>
-        
-<div id="simple-comment-system" style="padding: 30px 5%; background: #111; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; border-top: 3px solid #e50914;">
-    <div style="max-width: 700px; margin: 0 auto;">
-        <h3 style="color: #e50914; margin-bottom: 20px; font-size: 24px;">අදහස් දක්වන්න (Comments)</h3>
-        
-        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px;">
-            <input type="text" id="c_name" placeholder="ඔයාගේ නම..." style="padding: 12px; border-radius: 5px; border: 1px solid #333; background: #222; color: #fff; outline: none;">
-            <textarea id="c_msg" placeholder="අදහසක් ලියන්න..." style="padding: 12px; border-radius: 5px; border: 1px solid #333; background: #222; color: #fff; height: 80px; outline: none; resize: none;"></textarea>
-            <button onclick="addComment()" style="background: #e50914; color: #fff; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s;">Post Comment</button>
-        </div>
 
-        <div id="comment_list" style="display: flex; flex-direction: column; gap: 15px;">
-            </div>
-    </div>
-</div>
-
-<script>
-    // පරණ Comments Load කරමු
-    window.onload = function() {
-        displayComments();
-    };
-
-    function addComment() {
-        let name = document.getElementById('c_name').value;
-        let msg = document.getElementById('c_msg').value;
-
-        if (name == "" || msg == "") {
-            alert("කරුණාකර නම සහ comment එක ඇතුළත් කරන්න!");
-            return;
-        }
-
-        let commentData = {
-            username: name,
-            message: msg,
-            date: new Date().toLocaleString()
-        };
-
-        // LocalStorage එකේ Save කරමු (Browser එකේ save වෙලා තියෙයි)
-        let comments = localStorage.getItem("my_comments") ? JSON.parse(localStorage.getItem("my_comments")) : [];
-        comments.unshift(commentData); // අලුත් එක උඩටම දානවා
-        localStorage.setItem("my_comments", JSON.stringify(comments));
-
-        // Input boxes හිස් කරන්න
-        document.getElementById('c_name').value = "";
-        document.getElementById('c_msg').value = "";
-
-        displayComments();
-    }
-
-    function displayComments() {
-        let list = document.getElementById('comment_list');
-        let comments = localStorage.getItem("my_comments") ? JSON.parse(localStorage.getItem("my_comments")) : [];
-        
-        list.innerHTML = ""; // List එක clear කරන්න
-
-        if(comments.length === 0) {
-            list.innerHTML = "<p style='color: #666; text-align: center;'>තවම අදහස් කිසිවක් නැත.</p>";
-            return;
-        }
-
-        comments.forEach(function(item) {
-            list.innerHTML += `
-                <div style="background: #1a1a1a; padding: 15px; border-radius: 8px; border-left: 4px solid #e50914; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                        <strong style="color: #e50914;">${item.username}</strong>
-                        <small style="color: #555; font-size: 11px;">${item.date}</small>
-                    </div>
-                    <p style="margin: 0; color: #ddd; font-size: 14px; line-height: 1.5;">${item.message}</p>
-                </div>
-            `;
-        });
-    }
-</script>
         <!-- Video Player -->
         <section class="player-section">
             <h2 class="section-title">Watch Online</h2>
@@ -1887,56 +1815,6 @@ const firebaseConfig = {
             }
             showToast(`Showing ${genre} movies`);
         }
-
-        // Comment එකක් Firebase එකට යවන්න
-function sendComment() {
-    const name = document.getElementById('user-name').value;
-    const text = document.getElementById('user-comment').value;
-
-    if (name === "" || text === "") {
-        alert("කරුණාකර නම සහ comment එක ඇතුළත් කරන්න!");
-        return;
-    }
-
-    // Firebase Firestore එකට දත්ත යැවීම
-    db.collection("global_comments").add({
-        name: name,
-        text: text,
-        time: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
-        document.getElementById('user-comment').value = ""; // Box එක හිස් කරන්න
-        alert("Comment එක සාර්ථකව ඇඩ් වුණා!");
-    }).catch((error) => {
-        console.error("Error: ", error);
-    });
-}
-
-// Comments ටික real-time පෙන්නන්න
-function showComments() {
-    const list = document.getElementById('comments-list');
-
-    db.collection("global_comments").orderBy("time", "desc").onSnapshot((snapshot) => {
-        list.innerHTML = ""; // පරණ ඒවා අයින් කරන්න
-        
-        if (snapshot.empty) {
-            list.innerHTML = "<p style='color:#666;'>තවම comments නැත.</p>";
-            return;
-        }
-
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            list.innerHTML += `
-                <div style="background: #222; padding: 15px; border-radius: 8px; border-left: 4px solid #e50914;">
-                    <strong style="color: #e50914; display: block;">${data.name}</strong>
-                    <p style="margin-top: 5px; font-size: 14px; color: #ccc;">${data.text}</p>
-                </div>
-            `;
-        });
-    });
-}
-
-// Page එක Load වෙද්දීම function එක run කරන්න
-showComments();
 
         // ==========================================
         // ADMIN PANEL

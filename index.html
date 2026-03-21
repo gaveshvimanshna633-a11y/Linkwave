@@ -1213,7 +1213,22 @@
                 <p class="detail-description" id="detailDescription">Movie description goes here...</p>
             </div>
         </div>
+        
+<section id="community-comments" style="padding: 50px 5%; background: #111; border-top: 2px solid #e50914; color: white;">
+    <div style="max-width: 800px; margin: 0 auto;">
+        <h2 style="color: #e50914; margin-bottom: 25px; font-family: sans-serif;">Community Comments</h2>
+        
+        <div style="margin-bottom: 30px; background: #222; padding: 20px; border-radius: 10px;">
+            <input type="text" id="user-name" placeholder="ඔයාගේ නම" style="width: 100%; padding: 10px; margin-bottom: 10px; background: #333; border: none; color: white; border-radius: 5px;">
+            <textarea id="user-comment" placeholder="අදහසක් දක්වන්න..." rows="3" style="width: 100%; padding: 10px; background: #333; border: none; color: white; border-radius: 5px;"></textarea>
+            <button onclick="sendComment()" style="margin-top: 10px; width: 100%; padding: 10px; background: #e50914; border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 5px;">Post Comment</button>
+        </div>
 
+        <div id="comments-list" style="display: flex; flex-direction: column; gap: 15px;">
+            <p style="color: #888;">Loading comments...</p>
+        </div>
+    </div>
+</section>
         <!-- Video Player -->
         <section class="player-section">
             <h2 class="section-title">Watch Online</h2>

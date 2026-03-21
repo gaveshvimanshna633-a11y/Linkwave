@@ -1831,6 +1831,56 @@ const firebaseConfig = {
             showToast(`Showing ${genre} movies`);
         }
 
+        // Comment එකක් Firebase එකට යවන්න
+function sendComment() {
+    const name = document.getElementById('user-name').value;
+    const text = document.getElementById('user-comment').value;
+
+    if (name === "" || text === "") {
+        alert("කරුණාකර නම සහ comment එක ඇතුළත් කරන්න!");
+        return;
+    }
+
+    // Firebase Firestore එකට දත්ත යැවීම
+    db.collection("global_comments").add({
+        name: name,
+        text: text,
+        time: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+        document.getElementById('user-comment').value = ""; // Box එක හිස් කරන්න
+        alert("Comment එක සාර්ථකව ඇඩ් වුණා!");
+    }).catch((error) => {
+        console.error("Error: ", error);
+    });
+}
+
+// Comments ටික real-time පෙන්නන්න
+function showComments() {
+    const list = document.getElementById('comments-list');
+
+    db.collection("global_comments").orderBy("time", "desc").onSnapshot((snapshot) => {
+        list.innerHTML = ""; // පරණ ඒවා අයින් කරන්න
+        
+        if (snapshot.empty) {
+            list.innerHTML = "<p style='color:#666;'>තවම comments නැත.</p>";
+            return;
+        }
+
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            list.innerHTML += `
+                <div style="background: #222; padding: 15px; border-radius: 8px; border-left: 4px solid #e50914;">
+                    <strong style="color: #e50914; display: block;">${data.name}</strong>
+                    <p style="margin-top: 5px; font-size: 14px; color: #ccc;">${data.text}</p>
+                </div>
+            `;
+        });
+    });
+}
+
+// Page එක Load වෙද්දීම function එක run කරන්න
+showComments();
+
         // ==========================================
         // ADMIN PANEL
         // ==========================================

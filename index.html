@@ -3,25 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Wave - Pro Directory</title>
+    <title>Link Wave - Directory</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Framer Motion -->
     <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-
+    
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        primary: { DEFAULT: '#8B0000', light: '#DC143C', dark: '#5C0000' }
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        primary: {
+                            DEFAULT: '#8B0000',
+                            light: '#A52A2A',
+                            dark: '#5C0000'
+                        }
                     }
                 }
             }
@@ -29,268 +44,1255 @@
     </script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); }
-        .gradient-text { background: linear-gradient(135deg, #FF3131 0%, #8B0000 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .card-shadow { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .card-shadow:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 20px 40px rgba(139, 0, 0, 0.2); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 50%, #8B0000 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .wave-animation {
+            background: linear-gradient(90deg, transparent, rgba(139, 0, 0, 0.1), transparent);
+            background-size: 200% 100%;
+            animation: wave 2s infinite;
+        }
+        
+        @keyframes wave {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(139, 0, 0, 0.2);
+        }
+        
+        .sidebar-item {
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-item:hover {
+            background: linear-gradient(90deg, rgba(139, 0, 0, 0.1), transparent);
+            padding-left: 1.5rem;
+        }
+        
+        .notification-badge {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .thumbnail-placeholder {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        }
+        
+        .dark .thumbnail-placeholder {
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+        }
+        
+        /* Custom scrollbar for image preview */
+        .image-preview-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .image-preview-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .image-preview-scroll::-webkit-scrollbar-thumb {
+            background: rgba(139, 0, 0, 0.3);
+            border-radius: 3px;
+        }
+        
+        .image-preview-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 0, 0, 0.5);
+        }
+        
+        /* File input hidden */
+        .file-input-hidden {
+            display: none;
+        }
+        
+        /* Image upload zone */
+        .upload-zone {
+            border: 2px dashed;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-zone:hover {
+            border-color: #8B0000;
+            background: rgba(139, 0, 0, 0.05);
+        }
+        
+        .upload-zone.drag-over {
+            border-color: #8B0000;
+            background: rgba(139, 0, 0, 0.1);
+        }
     </style>
 </head>
-<body class="dark:bg-[#050505] bg-gray-50 transition-colors duration-500 overflow-x-hidden">
+<body>
     <div id="root"></div>
-
+    
     <script type="text/babel">
-        const { useState, useEffect, useMemo, useRef } = React;
-        const { motion, AnimatePresence, LayoutGroup } = window.Motion;
-
-        // --- Sidebar Component ---
-        const Sidebar = ({ isOpen, onClose, darkMode, activeCategory, setActiveCategory }) => {
-            const categories = [
-                { id: 'All', icon: 'layout-grid' },
-                { id: 'Movie', icon: 'film' },
-                { id: 'Study', icon: 'book-open' },
-                { id: 'Software', icon: 'cpu' },
-                { id: 'Social', icon: 'share-2' },
-                { id: 'Other', icon: 'more-horizontal' }
-            ];
-
-            return (
-                <AnimatePresence>
-                    {isOpen && (
-                        <>
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 bg-black/60 z-40 backdrop-blur-md" />
-                            <motion.div initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} 
-                                className={`fixed left-0 top-0 h-full w-72 z-50 p-6 ${darkMode ? 'bg-[#0A0A0A] border-r border-white/5 text-white' : 'bg-white border-r border-gray-200 text-gray-900 shadow-2xl'}`}>
-                                <div className="flex justify-between items-center mb-10">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 bg-primary rounded-lg"></div>
-                                        <h2 className="text-xl font-bold tracking-tight">MENU</h2>
-                                    </div>
-                                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors"><i data-lucide="x"></i></button>
-                                </div>
-                                <div className="space-y-2">
-                                    {categories.map(cat => (
-                                        <button key={cat.id} onClick={() => { setActiveCategory(cat.id); onClose(); }} 
-                                            className={`w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-300 ${activeCategory === cat.id ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'hover:bg-white/5 opacity-70 hover:opacity-100'}`}>
-                                            <i data-lucide={cat.icon} className="w-5 h-5"></i>
-                                            <span className="font-semibold">{cat.id}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </motion.div>
-                        </>
-                    )}
-                </AnimatePresence>
-            );
+        const { useState, useEffect, useRef } = React;
+        const { motion, AnimatePresence } = window.Motion;
+        
+        // Firebase Configuration - Replace with your config
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "your-project.firebaseapp.com",
+            projectId: "your-project",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef123456"
         };
-
-        // --- Form Component ---
-        const SubmitForm = ({ darkMode, onSubmit, onClose }) => {
-            const [formData, setFormData] = useState({ url: '', category: 'Movie', title: '', description: '', customImage: '' });
+        
+        // Custom hook for localStorage
+        const useLocalStorage = (key, initialValue) => {
+            const [storedValue, setStoredValue] = useState(() => {
+                try {
+                    const item = window.localStorage.getItem(key);
+                    return item ? JSON.parse(item) : initialValue;
+                } catch (error) {
+                    return initialValue;
+                }
+            });
             
-            const handleFileUpload = (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onloadend = () => setFormData(prev => ({ ...prev, customImage: reader.result }));
-                    reader.readAsDataURL(file);
+            const setValue = (value) => {
+                try {
+                    setStoredValue(value);
+                    window.localStorage.setItem(key, JSON.stringify(value));
+                } catch (error) {
+                    console.error(error);
                 }
             };
-
+            
+            return [storedValue, setValue];
+        };
+        
+        // Notification Component
+        const Notification = ({ message, type, onClose }) => {
+            useEffect(() => {
+                const timer = setTimeout(onClose, 3000);
+                return () => clearTimeout(timer);
+            }, [onClose]);
+            
             return (
-                <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-xl" onClick={onClose}>
-                    <motion.div initial={{ scale: 0.9, y: 20, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} onClick={e => e.stopPropagation()} 
-                        className={`w-full max-w-lg p-8 rounded-[2.5rem] shadow-2xl ${darkMode ? 'bg-[#111] text-white border border-white/10' : 'bg-white text-gray-900'}`}>
-                        <div className="flex justify-between items-center mb-8">
-                            <h2 className="text-3xl font-extrabold gradient-text">Add Link</h2>
-                            <button onClick={onClose} className="p-2 opacity-50 hover:opacity-100"><i data-lucide="x"></i></button>
-                        </div>
-                        
-                        <div className="space-y-5">
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold opacity-60 ml-1 text-white">URL</label>
-                                <input type="url" placeholder="https://..." className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 outline-none focus:ring-2 ring-primary/50 transition-all text-white" 
-                                    onChange={e => setFormData({...formData, url: e.target.value})} required />
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold opacity-60 ml-1 text-white">Image (Optional)</label>
-                                <div className="flex gap-3">
-                                    <input type="text" placeholder="Paste Image URL" value={formData.customImage.startsWith('data:') ? '' : formData.customImage}
-                                        className="flex-1 p-4 rounded-2xl bg-white/5 border border-white/10 outline-none text-white text-sm" 
-                                        onChange={e => setFormData({...formData, customImage: e.target.value})} />
-                                    
-                                    <label className="cursor-pointer bg-white/5 p-4 rounded-2xl border border-white/10 hover:bg-primary transition-all">
-                                        <i data-lucide="upload" className="w-5 h-5"></i>
-                                        <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
-                                    </label>
-                                </div>
-                                {formData.customImage && (
-                                    <div className="mt-2 flex items-center gap-3 p-2 bg-white/5 rounded-xl border border-white/5">
-                                        <img src={formData.customImage} className="w-10 h-10 rounded-lg object-cover" />
-                                        <span className="text-xs opacity-50">Preview attached</span>
-                                        <button onClick={() => setFormData({...formData, customImage: ''})} className="ml-auto text-red-500 text-xs font-bold">Remove</button>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-bold opacity-60 ml-1 text-white">Title</label>
-                                    <input type="text" className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 outline-none text-white" 
-                                        onChange={e => setFormData({...formData, title: e.target.value})} />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-bold opacity-60 ml-1 text-white">Category</label>
-                                    <select className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 outline-none text-white appearance-none" 
-                                        onChange={e => setFormData({...formData, category: e.target.value})}>
-                                        <option value="Movie" className="bg-gray-900">Movie</option>
-                                        <option value="Study" className="bg-gray-900">Study</option>
-                                        <option value="Software" className="bg-gray-900">Software</option>
-                                        <option value="Social" className="bg-gray-900">Social</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <button onClick={() => { if(formData.url) { onSubmit(formData); onClose(); } }} 
-                                className="w-full bg-primary text-white py-5 rounded-2xl font-black text-lg hover:bg-primary-light shadow-xl shadow-primary/20 transition-all mt-4 active:scale-95">
-                                GENERATE LINK WAVE
-                            </button>
-                        </div>
-                    </motion.div>
-                </div>
+                <motion.div
+                    initial={{ opacity: 0, y: -50, x: "-50%" }}
+                    animate={{ opacity: 1, y: 0, x: "-50%" }}
+                    exit={{ opacity: 0, y: -50, x: "-50%" }}
+                    className={`fixed top-4 left-1/2 z-50 px-6 py-3 rounded-lg shadow-lg ${
+                        type === 'success' ? 'bg-green-500' : 'bg-primary'
+                    } text-white font-medium`}
+                >
+                    <div className="flex items-center gap-2">
+                        <i data-lucide={type === 'success' ? 'check-circle' : 'bell'} className="w-5 h-5"></i>
+                        {message}
+                    </div>
+                </motion.div>
             );
         };
-
-        const App = () => {
-            const [darkMode, setDarkMode] = useState(true);
-            const [sidebarOpen, setSidebarOpen] = useState(false);
-            const [formOpen, setFormOpen] = useState(false);
-            const [search, setSearch] = useState('');
-            const [activeCategory, setActiveCategory] = useState('All');
-            const [links, setLinks] = useState(() => JSON.parse(localStorage.getItem('linkwave_pro') || '[]'));
-
-            useEffect(() => {
-                localStorage.setItem('linkwave_pro', JSON.stringify(links));
-                lucide.createIcons();
-            }, [links, darkMode, sidebarOpen, formOpen]);
-
-            const filteredLinks = useMemo(() => {
-                return links.filter(link => 
-                    (activeCategory === 'All' || link.category === activeCategory) &&
-                    (link.title?.toLowerCase().includes(search.toLowerCase()) || link.url.toLowerCase().includes(search.toLowerCase()))
-                );
-            }, [links, activeCategory, search]);
-
+        
+        // Sidebar Component
+        const Sidebar = ({ isOpen, onClose, darkMode, setCurrentView, unreadCount }) => {
+            const menuItems = [
+                { icon: 'home', label: 'Home', view: 'home' },
+                { icon: 'code', label: 'Developer Page', view: 'developer', external: true },
+                { icon: 'plus-circle', label: 'Submit Link', view: 'submit' },
+                { icon: 'bell', label: 'Notifications', view: 'notifications', badge: unreadCount },
+                { icon: 'film', label: 'Movies', view: 'category', category: 'Movie' },
+                { icon: 'send', label: 'Telegram', view: 'category', category: 'Telegram' },
+                { icon: 'facebook', label: 'Facebook', view: 'category', category: 'Facebook' },
+                { icon: 'message-circle', label: 'WhatsApp', view: 'category', category: 'WhatsApp' },
+            ];
+            
+            const handleClick = (item) => {
+                if (item.external) {
+                    window.open('https://github.com', '_blank');
+                } else if (item.category) {
+                    setCurrentView({ view: 'category', category: item.category });
+                } else {
+                    setCurrentView({ view: item.view });
+                }
+                if (window.innerWidth < 768) onClose();
+            };
+            
             return (
-                <div className={darkMode ? 'dark' : ''}>
-                    <div className="min-h-screen dark:bg-[#050505] bg-gray-50 dark:text-white text-gray-900 transition-colors duration-500">
-                        
-                        {/* Glass Header */}
-                        <header className="sticky top-0 z-30 px-6 py-5 border-b border-white/5 backdrop-blur-xl bg-black/20">
-                            <div className="max-w-7xl mx-auto flex justify-between items-center">
-                                <div className="flex items-center gap-6">
-                                    <button onClick={() => setSidebarOpen(true)} className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5">
-                                        <i data-lucide="menu" className="w-6 h-6"></i>
-                                    </button>
-                                    <h1 className="text-3xl font-[900] gradient-text tracking-tighter italic">LINKWAVE.</h1>
+                <>
+                    <AnimatePresence>
+                        {isOpen && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={onClose}
+                                className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                            />
+                        )}
+                    </AnimatePresence>
+                    
+                    <motion.aside
+                        initial={{ x: -300 }}
+                        animate={{ x: isOpen ? 0 : -300 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        className={`fixed left-0 top-0 h-full w-64 ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} border-r z-50 overflow-y-auto`}
+                    >
+                        <div className="p-6">
+                            <div className="flex items-center justify-between mb-8">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                                        <i data-lucide="link" className="w-6 h-6 text-white"></i>
+                                    </div>
+                                    <span className="text-xl font-bold gradient-text">Link Wave</span>
+                                </div>
+                                <button onClick={onClose} className="md:hidden">
+                                    <i data-lucide="x" className="w-6 h-6"></i>
+                                </button>
+                            </div>
+                            
+                            <nav className="space-y-2">
+                                {menuItems.map((item, index) => (
+                                    <motion.button
+                                        key={index}
+                                        whileHover={{ x: 5 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => handleClick(item)}
+                                        className={`sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-lg ${
+                                            darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-primary'
+                                        }`}
+                                    >
+                                        <i data-lucide={item.icon} className="w-5 h-5"></i>
+                                        <span className="flex-1 text-left">{item.label}</span>
+                                        {item.badge > 0 && (
+                                            <span className="notification-badge bg-primary text-white text-xs px-2 py-1 rounded-full">
+                                                {item.badge}
+                                            </span>
+                                        )}
+                                        {item.external && <i data-lucide="external-link" className="w-4 h-4 opacity-50"></i>}
+                                    </motion.button>
+                                ))}
+                            </nav>
+                        </div>
+                    </motion.aside>
+                </>
+            );
+        };
+        
+        // Header Component
+        const Header = ({ darkMode, setDarkMode, onMenuClick, notifications }) => {
+            const [showNotifications, setShowNotifications] = useState(false);
+            
+            return (
+                <motion.header
+                    initial={{ y: -100 }}
+                    animate={{ y: 0 }}
+                    className={`sticky top-0 z-30 ${darkMode ? 'bg-gray-900/95 border-gray-800' : 'bg-white/95 border-gray-200'} border-b backdrop-blur-sm`}
+                >
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center justify-between h-16">
+                            <div className="flex items-center gap-4">
+                                <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={onMenuClick}
+                                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                                >
+                                    <i data-lucide="menu" className="w-6 h-6"></i>
+                                </motion.button>
+                                
+                                <div className="hidden md:flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                                        <i data-lucide="link" className="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <span className="text-lg font-bold gradient-text">Link Wave</span>
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-4">
+                                <div className="relative">
+                                    <motion.button
+                                        whileHover={{ scale: 1.1 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={() => setShowNotifications(!showNotifications)}
+                                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 relative"
+                                    >
+                                        <i data-lucide="bell" className="w-5 h-5"></i>
+                                        {notifications.length > 0 && (
+                                            <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full notification-badge"></span>
+                                        )}
+                                    </motion.button>
+                                    
+                                    <AnimatePresence>
+                                        {showNotifications && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 10 }}
+                                                className={`absolute right-0 mt-2 w-80 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl shadow-xl overflow-hidden`}
+                                            >
+                                                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                                                    <h3 className="font-semibold">Notifications</h3>
+                                                </div>
+                                                <div className="max-h-64 overflow-y-auto">
+                                                    {notifications.length === 0 ? (
+                                                        <p className="p-4 text-center text-gray-500">No new notifications</p>
+                                                    ) : (
+                                                        notifications.map((notif, idx) => (
+                                                            <div key={idx} className="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                                <p className="text-sm font-medium">{notif.title}</p>
+                                                                <p className="text-xs text-gray-500 mt-1">{notif.time}</p>
+                                                            </div>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
                                 
-                                <div className="flex items-center gap-3">
-                                    <button onClick={() => setDarkMode(!darkMode)} className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5">
-                                        <i data-lucide={darkMode ? 'sun' : 'moon'} className="w-5 h-5 text-yellow-500"></i>
-                                    </button>
-                                    <button onClick={() => setFormOpen(true)} 
-                                        className="bg-primary hover:bg-primary-light px-6 py-3 rounded-2xl text-white font-bold flex items-center gap-3 shadow-lg shadow-primary/20 transition-all active:scale-90">
-                                        <i data-lucide="plus-circle" className="w-5 h-5"></i>
-                                        <span className="hidden sm:inline">Add Resource</span>
-                                    </button>
+                                <motion.button
+                                    whileHover={{ scale: 1.1, rotate: 180 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => setDarkMode(!darkMode)}
+                                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                                >
+                                    <i data-lucide={darkMode ? 'sun' : 'moon'} className="w-5 h-5"></i>
+                                </motion.button>
+                            </div>
+                        </div>
+                    </div>
+                </motion.header>
+            );
+        };
+        
+        // Hero Section
+        const Hero = ({ darkMode }) => {
+            const text = "Discover & Share Amazing Links";
+            const [displayText, setDisplayText] = useState("");
+            const [index, setIndex] = useState(0);
+            
+            useEffect(() => {
+                if (index < text.length) {
+                    const timeout = setTimeout(() => {
+                        setDisplayText(prev => prev + text[index]);
+                        setIndex(index + 1);
+                    }, 50);
+                    return () => clearTimeout(timeout);
+                }
+            }, [index]);
+            
+            return (
+                <motion.section
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="relative overflow-hidden py-20 px-4"
+                >
+                    <div className="absolute inset-0 wave-animation opacity-30"></div>
+                    
+                    <div className="max-w-4xl mx-auto text-center relative z-10">
+                        <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+                            className="w-20 h-20 mx-auto mb-8 bg-primary rounded-2xl flex items-center justify-center shadow-2xl"
+                        >
+                            <i data-lucide="waves" className="w-10 h-10 text-white"></i>
+                        </motion.div>
+                        
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="text-4xl md:text-6xl font-bold mb-6"
+                        >
+                            <span className="gradient-text">{displayText}</span>
+                            <span className="animate-pulse">|</span>
+                        </motion.h1>
+                        
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                            className={`text-lg md:text-xl mb-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}
+                        >
+                            Your curated directory of the best links on the internet.
+                            <br className="hidden md:block" />
+                            Join our community and start sharing today.
+                        </motion.p>
+                        
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.7 }}
+                            className="flex flex-wrap justify-center gap-4"
+                        >
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary">
+                                <i data-lucide="film" className="w-4 h-4"></i>
+                                <span className="text-sm font-medium">Movies</span>
+                            </div>
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 text-blue-500">
+                                <i data-lucide="send" className="w-4 h-4"></i>
+                                <span className="text-sm font-medium">Telegram</span>
+                            </div>
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 text-indigo-500">
+                                <i data-lucide="facebook" className="w-4 h-4"></i>
+                                <span className="text-sm font-medium">Facebook</span>
+                            </div>
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 text-green-500">
+                                <i data-lucide="message-circle" className="w-4 h-4"></i>
+                                <span className="text-sm font-medium">WhatsApp</span>
+                            </div>
+                        </motion.div>
+                    </div>
+                </motion.section>
+            );
+        };
+        
+        // ============================================
+        // UPDATED LinkCard Component with Custom Image Support
+        // ============================================
+        const LinkCard = ({ link, darkMode, onShare }) => {
+            const [imageError, setImageError] = useState(false);
+            
+            const categoryColors = {
+                Movie: 'bg-red-500/10 text-red-500 border-red-500/20',
+                Telegram: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+                Facebook: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
+                WhatsApp: 'bg-green-500/10 text-green-500 border-green-500/20'
+            };
+            
+            const categoryIcons = {
+                Movie: 'film',
+                Telegram: 'send',
+                Facebook: 'facebook',
+                WhatsApp: 'message-circle'
+            };
+            
+            const getDomain = (url) => {
+                try {
+                    return new URL(url).hostname.replace('www.', '');
+                } catch {
+                    return url;
+                }
+            };
+            
+            // Get thumbnail with priority: customImage > favicon API > placeholder
+            const getThumbnail = () => {
+                // Priority 1: Custom image (Base64 or URL)
+                if (link.customImage && !imageError) {
+                    return link.customImage;
+                }
+                
+                // Priority 2: Google Favicon API (fallback)
+                if (!imageError) {
+                    try {
+                        const domain = new URL(link.url).hostname;
+                        return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+                    } catch {
+                        return null;
+                    }
+                }
+                
+                return null;
+            };
+            
+            const thumbnail = getThumbnail();
+            const hasCustomImage = !!link.customImage;
+            
+            return (
+                <motion.div
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    whileHover={{ y: -5 }}
+                    className={`card-hover ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl overflow-hidden`}
+                >
+                    <div className="h-32 thumbnail-placeholder flex items-center justify-center relative overflow-hidden">
+                        {thumbnail ? (
+                            <img
+                                src={thumbnail}
+                                alt=""
+                                className={`w-full h-full object-cover ${hasCustomImage ? 'object-cover' : 'object-contain p-4'}`}
+                                onError={() => setImageError(true)}
+                            />
+                        ) : (
+                            <div className="text-center">
+                                <i data-lucide="link" className="w-12 h-12 mx-auto mb-2 opacity-30"></i>
+                                <span className="text-sm opacity-50">{getDomain(link.url)}</span>
+                            </div>
+                        )}
+                        
+                        {/* Custom image indicator */}
+                        {hasCustomImage && (
+                            <div className="absolute top-2 left-2 bg-primary/90 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                                <i data-lucide="image" className="w-3 h-3"></i>
+                                <span>Custom</span>
+                            </div>
+                        )}
+                        
+                        <div className="absolute top-3 right-3">
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium border ${categoryColors[link.category]}`}>
+                                <i data-lucide={categoryIcons[link.category]} className="w-3 h-3 inline mr-1"></i>
+                                {link.category}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div className="p-4">
+                        <h3 className="font-semibold mb-2 line-clamp-1" title={link.title || link.url}>
+                            {link.title || getDomain(link.url)}
+                        </h3>
+                        <p className={`text-sm mb-4 line-clamp-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            {link.description || `Shared link from ${link.category} category`}
+                        </p>
+                        
+                        <div className="flex items-center justify-between">
+                            <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                {new Date(link.timestamp).toLocaleDateString()}
+                            </span>
+                            
+                            <div className="flex items-center gap-2">
+                                <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => onShare(link)}
+                                    className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+                                >
+                                    <i data-lucide="share-2" className="w-4 h-4"></i>
+                                </motion.button>
+                                <motion.a
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    href={link.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-2 rounded-lg bg-primary text-white hover:bg-primary-dark"
+                                >
+                                    <i data-lucide="external-link" className="w-4 h-4"></i>
+                                </motion.a>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+            );
+        };
+        
+        // ============================================
+        // UPDATED SubmitForm Component with Image Upload
+        // ============================================
+        const SubmitForm = ({ darkMode, onSubmit, onClose }) => {
+            const [url, setUrl] = useState('');
+            const [category, setCategory] = useState('Movie');
+            const [title, setTitle] = useState('');
+            const [description, setDescription] = useState('');
+            const [imageUrl, setImageUrl] = useState('');
+            const [base64Image, setBase64Image] = useState('');
+            const [loading, setLoading] = useState(false);
+            const [dragOver, setDragOver] = useState(false);
+            const fileInputRef = useRef(null);
+            
+            const categories = [
+                { value: 'Movie', icon: 'film', color: 'red' },
+                { value: 'Telegram', icon: 'send', color: 'blue' },
+                { value: 'Facebook', icon: 'facebook', color: 'indigo' },
+                { value: 'WhatsApp', icon: 'message-circle', color: 'green' }
+            ];
+            
+            // Convert file to Base64
+            const fileToBase64 = (file) => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = (error) => reject(error);
+                });
+            };
+            
+            // Handle file selection
+            const handleFileSelect = async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    await processFile(file);
+                }
+            };
+            
+            // Process file (validate and convert)
+            const processFile = async (file) => {
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select an image file');
+                    return;
+                }
+                
+                // Validate file size (max 2MB for localStorage)
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('Image size should be less than 2MB');
+                    return;
+                }
+                
+                try {
+                    const base64 = await fileToBase64(file);
+                    setBase64Image(base64);
+                    setImageUrl(''); // Clear manual URL when file is selected
+                } catch (error) {
+                    console.error('Error converting image:', error);
+                    alert('Error processing image');
+                }
+            };
+            
+            // Handle drag and drop
+            const handleDragOver = (e) => {
+                e.preventDefault();
+                setDragOver(true);
+            };
+            
+            const handleDragLeave = (e) => {
+                e.preventDefault();
+                setDragOver(false);
+            };
+            
+            const handleDrop = async (e) => {
+                e.preventDefault();
+                setDragOver(false);
+                
+                const file = e.dataTransfer.files[0];
+                if (file) {
+                    await processFile(file);
+                }
+            };
+            
+            // Handle manual image URL input
+            const handleImageUrlChange = (e) => {
+                setImageUrl(e.target.value);
+                if (e.target.value) {
+                    setBase64Image(''); // Clear file upload when URL is entered
+                }
+            };
+            
+            // Clear image selection
+            const clearImage = () => {
+                setBase64Image('');
+                setImageUrl('');
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
+            };
+            
+            // Get the final image to use
+            const getCustomImage = () => {
+                return base64Image || imageUrl || null;
+            };
+            
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                if (!url) return;
+                
+                setLoading(true);
+                
+                const formData = {
+                    url,
+                    category,
+                    title,
+                    description,
+                    customImage: getCustomImage()
+                };
+                
+                await onSubmit(formData);
+                setLoading(false);
+                
+                // Reset form
+                setUrl('');
+                setTitle('');
+                setDescription('');
+                setImageUrl('');
+                setBase64Image('');
+            };
+            
+            const hasImage = base64Image || imageUrl;
+            
+            return (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+                    onClick={onClose}
+                >
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        onClick={e => e.stopPropagation()}
+                        className={`w-full max-w-2xl max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} border rounded-2xl p-6 shadow-2xl`}
+                    >
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="image-plus" className="w-5 h-5 text-primary"></i>
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-bold gradient-text">Submit New Link</h2>
+                                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Add a link with custom thumbnail</p>
                                 </div>
                             </div>
-                        </header>
-
-                        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} darkMode={darkMode} activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
-
-                        {/* Search & Tabs Area */}
-                        <main className="max-w-7xl mx-auto px-6 py-12">
-                            <div className="mb-12 text-center space-y-6">
-                                <motion.h2 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-5xl font-black mb-4">Curate Your Digital World</motion.h2>
-                                <div className="relative max-w-2xl mx-auto group">
-                                    <i data-lucide="search" className="absolute left-6 top-1/2 -translate-y-1/2 text-primary w-6 h-6 group-focus-within:scale-110 transition-transform"></i>
-                                    <input type="text" placeholder="Search by name or URL..." 
-                                        className="w-full pl-16 pr-6 py-6 rounded-[2rem] bg-white/5 border border-white/10 outline-none focus:ring-4 ring-primary/20 transition-all text-xl" 
-                                        onChange={e => setSearch(e.target.value)} />
+                            <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                                <i data-lucide="x" className="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            {/* Link URL */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Link URL *</label>
+                                <div className="relative">
+                                    <i data-lucide="link" className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                                    <input
+                                        type="url"
+                                        value={url}
+                                        onChange={(e) => setUrl(e.target.value)}
+                                        placeholder="https://example.com"
+                                        className={`w-full pl-10 pr-4 py-3 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700 focus:border-primary' : 'bg-gray-50 border-gray-200 focus:border-primary'} focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
+                                        required
+                                    />
                                 </div>
-                                <div className="flex justify-center gap-2 overflow-x-auto no-scrollbar py-4 px-2">
-                                    {['All', 'Movie', 'Study', 'Software', 'Social'].map(c => (
-                                        <button key={c} onClick={() => setActiveCategory(c)} 
-                                            className={`px-8 py-3 rounded-2xl text-sm font-bold transition-all border ${activeCategory === c ? 'bg-primary border-primary text-white shadow-lg shadow-primary/30' : 'bg-white/5 border-white/5 opacity-50 hover:opacity-100 hover:bg-white/10'}`}>
-                                            {c}
-                                        </button>
+                            </div>
+                            
+                            {/* Category Selection */}
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Category *</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {categories.map((cat) => (
+                                        <motion.button
+                                            key={cat.value}
+                                            type="button"
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            onClick={() => setCategory(cat.value)}
+                                            className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                                                category === cat.value
+                                                    ? `border-${cat.color}-500 bg-${cat.color}-500/10 text-${cat.color}-500`
+                                                    : darkMode ? 'border-gray-700 hover:border-gray-600' : 'border-gray-200 hover:border-gray-300'
+                                            }`}
+                                        >
+                                            <i data-lucide={cat.icon} className="w-5 h-5"></i>
+                                            <span className="font-medium">{cat.value}</span>
+                                        </motion.button>
                                     ))}
                                 </div>
                             </div>
-
-                            {/* Animated Grid Container */}
-                            <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                                <AnimatePresence mode="popLayout">
-                                    {filteredLinks.map(link => (
-                                        <motion.div 
-                                            layout
-                                            initial={{ opacity: 0, scale: 0.8, y: 30 }}
-                                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                                            exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
-                                            key={link.id} 
-                                            className="card-shadow group relative rounded-[2.5rem] overflow-hidden border border-white/10 bg-white/5 backdrop-blur-sm"
+                            
+                            {/* Title & Description */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Title (Optional)</label>
+                                    <input
+                                        type="text"
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
+                                        placeholder="Enter link title"
+                                        className={`w-full px-4 py-3 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700 focus:border-primary' : 'bg-gray-50 border-gray-200 focus:border-primary'} focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Description (Optional)</label>
+                                    <input
+                                        type="text"
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        placeholder="Brief description"
+                                        className={`w-full px-4 py-3 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700 focus:border-primary' : 'bg-gray-50 border-gray-200 focus:border-primary'} focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
+                                    />
+                                </div>
+                            </div>
+                            
+                            {/* Image Upload Section */}
+                            <div>
+                                <label className="block text-sm font-medium mb-3">Thumbnail Image</label>
+                                
+                                {/* File Upload Zone */}
+                                <div
+                                    onDragOver={handleDragOver}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={handleDrop}
+                                    className={`upload-zone rounded-xl p-6 text-center ${
+                                        dragOver ? 'drag-over border-primary bg-primary/10' : ''
+                                    } ${darkMode ? 'border-gray-700 bg-gray-800/50' : 'border-gray-300 bg-gray-50'}`}
+                                >
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFileSelect}
+                                        className="file-input-hidden"
+                                        id="image-upload"
+                                    />
+                                    
+                                    <div className="flex flex-col items-center gap-3">
+                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+                                            <i data-lucide="upload-cloud" className="w-6 h-6 text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <p className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                Drag & drop an image here
+                                            </p>
+                                            <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                                                or click to browse (max 2MB)
+                                            </p>
+                                        </div>
+                                        <motion.button
+                                            type="button"
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="px-4 py-2 bg-primary/10 text-primary rounded-lg text-sm font-medium hover:bg-primary/20 transition-colors flex items-center gap-2"
                                         >
-                                            {/* Delete Button */}
-                                            <button onClick={() => setLinks(links.filter(l => l.id !== link.id))} 
-                                                className="absolute top-4 right-4 z-20 p-2 bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white rounded-xl opacity-0 group-hover:opacity-100 transition-all">
-                                                <i data-lucide="trash-2" className="w-4 h-4"></i>
-                                            </button>
-
-                                            <div className="h-44 relative overflow-hidden bg-white/5">
-                                                <img 
-                                                    src={link.customImage || `https://www.google.com/s2/favicons?domain=${new URL(link.url).hostname}&sz=128`} 
-                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                                                    onError={(e) => e.target.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80'}
+                                            <i data-lucide="image" className="w-4 h-4"></i>
+                                            Choose Photo
+                                        </motion.button>
+                                    </div>
+                                </div>
+                                
+                                {/* OR Divider */}
+                                <div className="flex items-center gap-4 my-4">
+                                    <div className={`flex-1 h-px ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                                    <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>OR</span>
+                                    <div className={`flex-1 h-px ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+                                </div>
+                                
+                                {/* Manual Image URL Input */}
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Paste Image URL</label>
+                                    <div className="relative">
+                                        <i data-lucide="image" className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                                        <input
+                                            type="url"
+                                            value={imageUrl}
+                                            onChange={handleImageUrlChange}
+                                            placeholder="https://example.com/image.jpg"
+                                            className={`w-full pl-10 pr-4 py-3 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700 focus:border-primary' : 'bg-gray-50 border-gray-200 focus:border-primary'} focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
+                                        />
+                                    </div>
+                                </div>
+                                
+                                {/* Image Preview */}
+                                <AnimatePresence>
+                                    {hasImage && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="mt-4"
+                                        >
+                                            <label className="block text-sm font-medium mb-2">Preview</label>
+                                            <div className={`relative rounded-lg overflow-hidden border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                                                <img
+                                                    src={base64Image || imageUrl}
+                                                    alt="Preview"
+                                                    className="w-full h-48 object-cover"
+                                                    onError={(e) => {
+                                                        e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"%3E%3Crect x="3" y="3" width="18" height="18" rx="2" ry="2"%3E%3C/rect%3E%3Ccircle cx="8.5" cy="8.5" r="1.5"%3E%3C/circle%3E%3Cpolyline points="21 15 16 10 5 21"%3E%3C/polyline%3E%3C/svg%3E';
+                                                    }}
                                                 />
-                                                <div className="absolute bottom-4 left-4 px-3 py-1 bg-primary rounded-lg text-[10px] font-black tracking-widest text-white uppercase">{link.category}</div>
-                                            </div>
-                                            
-                                            <div className="p-6 space-y-4">
-                                                <div>
-                                                    <h3 className="font-extrabold text-xl truncate leading-tight">{link.title || 'Exploring Link...'}</h3>
-                                                    <p className="text-gray-500 text-xs mt-1 truncate font-medium opacity-60 italic">{link.url}</p>
+                                                <motion.button
+                                                    type="button"
+                                                    whileHover={{ scale: 1.1 }}
+                                                    whileTap={{ scale: 0.9 }}
+                                                    onClick={clearImage}
+                                                    className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors"
+                                                >
+                                                    <i data-lucide="x" className="w-4 h-4"></i>
+                                                </motion.button>
+                                                <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                                                    <i data-lucide={base64Image ? 'file-image' : 'link'} className="w-3 h-3"></i>
+                                                    <span>{base64Image ? 'Uploaded Image' : 'External URL'}</span>
                                                 </div>
-                                                <a href={link.url} target="_blank" 
-                                                    className="flex items-center justify-center gap-3 w-full py-4 bg-white/5 hover:bg-primary rounded-2xl font-black text-sm transition-all border border-white/5 hover:border-primary active:scale-95 group/btn">
-                                                    OPEN LINK <i data-lucide="chevron-right" className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform"></i>
-                                                </a>
                                             </div>
                                         </motion.div>
-                                    ))}
+                                    )}
                                 </AnimatePresence>
-                            </motion.div>
-
-                            {filteredLinks.length === 0 && (
-                                <div className="text-center py-20 opacity-30 italic font-medium">No resources found in this category...</div>
+                            </div>
+                            
+                            {/* Submit Button */}
+                            <motion.button
+                                type="submit"
+                                disabled={loading || !url}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="w-full py-3 bg-primary text-white rounded-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-dark transition-colors"
+                            >
+                                {loading ? (
+                                    <motion.div
+                                        animate={{ rotate: 360 }}
+                                        transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                                    >
+                                        <i data-lucide="loader-2" className="w-5 h-5"></i>
+                                    </motion.div>
+                                ) : (
+                                    <>
+                                        <i data-lucide="plus" className="w-5 h-5"></i>
+                                        Submit Link
+                                    </>
+                                )}
+                            </motion.button>
+                        </form>
+                    </motion.div>
+                </motion.div>
+            );
+        };
+        
+        // Share Modal Component
+        const ShareModal = ({ link, onClose }) => {
+            const shareOptions = [
+                { name: 'Twitter', icon: 'twitter', color: 'bg-sky-500', url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(link.url)}` },
+                { name: 'Facebook', icon: 'facebook', color: 'bg-blue-600', url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link.url)}` },
+                { name: 'WhatsApp', icon: 'message-circle', color: 'bg-green-500', url: `https://wa.me/?text=${encodeURIComponent(link.url)}` },
+                { name: 'Telegram', icon: 'send', color: 'bg-sky-600', url: `https://t.me/share/url?url=${encodeURIComponent(link.url)}` },
+                { name: 'Copy Link', icon: 'copy', color: 'bg-gray-600', action: 'copy' },
+                { name: 'Email', icon: 'mail', color: 'bg-red-500', url: `mailto:?subject=Check out this link&body=${encodeURIComponent(link.url)}` }
+            ];
+            
+            const handleShare = async (option) => {
+                if (option.action === 'copy') {
+                    await navigator.clipboard.writeText(link.url);
+                    onClose();
+                } else if (option.url) {
+                    window.open(option.url, '_blank', 'width=600,height=400');
+                }
+            };
+            
+            return (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+                    onClick={onClose}
+                >
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        onClick={e => e.stopPropagation()}
+                        className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 w-full max-w-md"
+                    >
+                        <h3 className="text-xl font-bold mb-4 text-center">Share Link</h3>
+                        <div className="grid grid-cols-3 gap-4">
+                            {shareOptions.map((option) => (
+                                <motion.button
+                                    key={option.name}
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => handleShare(option)}
+                                    className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                >
+                                    <div className={`w-12 h-12 ${option.color} rounded-full flex items-center justify-center text-white`}>
+                                        <i data-lucide={option.icon} className="w-6 h-6"></i>
+                                    </div>
+                                    <span className="text-sm font-medium">{option.name}</span>
+                                </motion.button>
+                            ))}
+                        </div>
+                    </motion.div>
+                </motion.div>
+            );
+        };
+        
+        // Main App Component
+        const App = () => {
+            const [darkMode, setDarkMode] = useLocalStorage('darkMode', false);
+            const [sidebarOpen, setSidebarOpen] = useState(false);
+            const [currentView, setCurrentView] = useState({ view: 'home' });
+            const [links, setLinks] = useLocalStorage('links', []);
+            const [notifications, setNotifications] = useLocalStorage('notifications', []);
+            const [showSubmit, setShowSubmit] = useState(false);
+            const [showShare, setShowShare] = useState(null);
+            const [toast, setToast] = useState(null);
+            const [filterCategory, setFilterCategory] = useState('All');
+            
+            // Initialize Lucide icons
+            useEffect(() => {
+                lucide.createIcons();
+            });
+            
+            // Re-initialize icons when state changes
+            useEffect(() => {
+                lucide.createIcons();
+            }, [links, notifications, currentView, showSubmit, showShare, toast, sidebarOpen]);
+            
+            // Apply dark mode
+            useEffect(() => {
+                if (darkMode) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }, [darkMode]);
+            
+            // Add sample data if empty
+            useEffect(() => {
+                if (links.length === 0) {
+                    const sampleLinks = [
+                        { 
+                            id: 1, 
+                            url: 'https://www.imdb.com', 
+                            title: 'IMDb - Movies & TV', 
+                            category: 'Movie', 
+                            description: 'World\'s most popular source for movie info', 
+                            timestamp: Date.now() - 86400000,
+                            customImage: null
+                        },
+                        { 
+                            id: 2, 
+                            url: 'https://t.me/telegram', 
+                            title: 'Telegram Messenger', 
+                            category: 'Telegram', 
+                            description: 'Fast and secure messaging app', 
+                            timestamp: Date.now() - 172800000,
+                            customImage: null
+                        },
+                        { 
+                            id: 3, 
+                            url: 'https://www.facebook.com', 
+                            title: 'Facebook', 
+                            category: 'Facebook', 
+                            description: 'Connect with friends and family', 
+                            timestamp: Date.now() - 259200000,
+                            customImage: null
+                        },
+                        { 
+                            id: 4, 
+                            url: 'https://web.whatsapp.com', 
+                            title: 'WhatsApp Web', 
+                            category: 'WhatsApp', 
+                            description: 'Free messaging and calling', 
+                            timestamp: Date.now() - 345600000,
+                            customImage: null
+                        }
+                    ];
+                    setLinks(sampleLinks);
+                }
+            }, []);
+            
+            const handleSubmit = async (formData) => {
+                const newLink = {
+                    id: Date.now(),
+                    ...formData,
+                    timestamp: Date.now()
+                };
+                
+                setLinks([newLink, ...links]);
+                
+                // Add notification
+                const newNotification = {
+                    id: Date.now(),
+                    title: `New ${formData.category} link added!`,
+                    time: 'Just now'
+                };
+                setNotifications([newNotification, ...notifications].slice(0, 10));
+                
+                setShowSubmit(false);
+                setToast({ message: 'Link submitted successfully!', type: 'success' });
+            };
+            
+            const handleShare = (link) => {
+                setShowShare(link);
+            };
+            
+            const filteredLinks = currentView.view === 'category' && currentView.category
+                ? links.filter(l => l.category === currentView.category)
+                : filterCategory === 'All'
+                    ? links
+                    : links.filter(l => l.category === filterCategory);
+            
+            const unreadCount = notifications.length;
+            
+            return (
+                <div className={`min-h-screen ${darkMode ? 'bg-gray-950 text-white' : 'bg-gray-50 text-gray-900'} transition-colors duration-300`}>
+                    <Sidebar
+                        isOpen={sidebarOpen}
+                        onClose={() => setSidebarOpen(false)}
+                        darkMode={darkMode}
+                        setCurrentView={(view) => {
+                            setCurrentView(view);
+                            if (view.view === 'submit') setShowSubmit(true);
+                        }}
+                        unreadCount={unreadCount}
+                    />
+                    
+                    <div className="md:ml-64">
+                        <Header
+                            darkMode={darkMode}
+                            setDarkMode={setDarkMode}
+                            onMenuClick={() => setSidebarOpen(true)}
+                            notifications={notifications}
+                        />
+                        
+                        <main className="pb-20">
+                            {currentView.view === 'home' && (
+                                <>
+                                    <Hero darkMode={darkMode} />
+                                    
+                                    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                                        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+                                            <h2 className="text-2xl font-bold">Recent Links</h2>
+                                            
+                                            <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                                                {['All', 'Movie', 'Telegram', 'Facebook', 'WhatsApp'].map((cat) => (
+                                                    <motion.button
+                                                        key={cat}
+                                                        whileHover={{ scale: 1.05 }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                        onClick={() => setFilterCategory(cat)}
+                                                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                                                            filterCategory === cat
+                                                                ? 'bg-primary text-white'
+                                                                : darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                                                        }`}
+                                                    >
+                                                        {cat}
+                                                    </motion.button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        
+                                        <motion.div
+                                            layout
+                                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                                        >
+                                            <AnimatePresence>
+                                                {filteredLinks.map((link) => (
+                                                    <LinkCard
+                                                        key={link.id}
+                                                        link={link}
+                                                        darkMode={darkMode}
+                                                        onShare={handleShare}
+                                                    />
+                                                ))}
+                                            </AnimatePresence>
+                                        </motion.div>
+                                        
+                                        {filteredLinks.length === 0 && (
+                                            <motion.div
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                className="text-center py-20"
+                                            >
+                                                <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                                                    <i data-lucide="inbox" className="w-12 h-12 text-gray-400"></i>
+                                                </div>
+                                                <p className="text-gray-500">No links found in this category</p>
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={() => setShowSubmit(true)}
+                                                    className="mt-4 px-6 py-2 bg-primary text-white rounded-lg font-medium"
+                                                >
+                                                    Add First Link
+                                                </motion.button>
+                                            </motion.div>
+                                        )}
+                                    </section>
+                                </>
+                            )}
+                            
+                            {currentView.view === 'category' && (
+                                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                                    <div className="flex items-center gap-4 mb-8">
+                                        <motion.button
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={() => setCurrentView({ view: 'home' })}
+                                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                                        >
+                                            <i data-lucide="arrow-left" className="w-6 h-6"></i>
+                                        </motion.button>
+                                        <h2 className="text-3xl font-bold">{currentView.category} Links</h2>
+                                    </div>
+                                    
+                                    <motion.div
+                                        layout
+                                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                                    >
+                                        {filteredLinks.map((link) => (
+                                            <LinkCard
+                                                key={link.id}
+                                                link={link}
+                                                darkMode={darkMode}
+                                                onShare={handleShare}
+                                            />
+                                        ))}
+                                    </motion.div>
+                                </section>
                             )}
                         </main>
-
-                        <AnimatePresence>
-                            {formOpen && <SubmitForm darkMode={darkMode} onClose={() => setFormOpen(false)} onSubmit={(data) => setLinks([{...data, id: Date.now()}, ...links])} />}
-                        </AnimatePresence>
                     </div>
+                    
+                    {/* Floating Action Button */}
+                    <motion.button
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setShowSubmit(true)}
+                        className="fixed bottom-6 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center z-40 hover:bg-primary-dark transition-colors"
+                    >
+                        <i data-lucide="plus" className="w-6 h-6"></i>
+                    </motion.button>
+                    
+                    {/* Modals */}
+                    <AnimatePresence>
+                        {showSubmit && (
+                            <SubmitForm
+                                darkMode={darkMode}
+                                onSubmit={handleSubmit}
+                                onClose={() => setShowSubmit(false)}
+                            />
+                        )}
+                    </AnimatePresence>
+                    
+                    <AnimatePresence>
+                        {showShare && (
+                            <ShareModal
+                                link={showShare}
+                                onClose={() => setShowShare(null)}
+                            />
+                        )}
+                    </AnimatePresence>
+                    
+                    <AnimatePresence>
+                        {toast && (
+                            <Notification
+                                message={toast.message}
+                                type={toast.type}
+                                onClose={() => setToast(null)}
+                            />
+                        )}
+                    </AnimatePresence>
                 </div>
             );
         };
-
+        
+        // Render the app
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
 </body>
-    </html>
+</html>

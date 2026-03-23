@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Wave - Social Link Sharing Platform</title>
+    <title>Link Wave - Directory</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,8 +20,8 @@
     
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -33,27 +33,9 @@
                 extend: {
                     colors: {
                         primary: {
-                            50: '#fef2f2',
-                            100: '#fee2e2',
-                            200: '#fecaca',
-                            300: '#fca5a5',
-                            400: '#f87171',
-                            500: '#ef4444',
-                            600: '#dc2626',
-                            700: '#b91c1c',
-                            800: '#991b1b',
-                            900: '#7f1d1d',
-                            950: '#450a0a',
-                        }
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'wave': 'wave 2s ease-in-out infinite',
-                    },
-                    keyframes: {
-                        wave: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-10px)' },
+                            DEFAULT: '#8B0000',
+                            light: '#A52A2A',
+                            dark: '#5C0000'
                         }
                     }
                 }
@@ -62,46 +44,41 @@
     </script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         
         body {
-            font-family: 'Inter', sans-serif;
-        }
-        
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .dark .glass-effect {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         .gradient-text {
-            background: linear-gradient(135deg, #dc2626 0%, #f87171 100%);
+            background: linear-gradient(135deg, #8B0000 0%, #DC143C 50%, #8B0000 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
         
-        .link-card {
+        .wave-animation {
+            background: linear-gradient(90deg, transparent, rgba(139, 0, 0, 0.1), transparent);
+            background-size: 200% 100%;
+            animation: wave 2s infinite;
+        }
+        
+        @keyframes wave {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .card-hover {
             transition: all 0.3s ease;
         }
         
-        .link-card:hover {
+        .card-hover:hover {
             transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(220, 38, 38, 0.2);
-        }
-        
-        .live-indicator {
-            animation: pulse-live 2s infinite;
-        }
-        
-        @keyframes pulse-live {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.1); }
+            box-shadow: 0 20px 40px rgba(139, 0, 0, 0.2);
         }
         
         .sidebar-item {
@@ -109,32 +86,36 @@
         }
         
         .sidebar-item:hover {
-            background: linear-gradient(90deg, rgba(220, 38, 38, 0.2) 0%, transparent 100%);
-            border-left: 3px solid #dc2626;
+            background: linear-gradient(90deg, rgba(139, 0, 0, 0.1), transparent);
+            padding-left: 1.5rem;
         }
         
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
+        .notification-badge {
+            animation: pulse 2s infinite;
         }
         
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
         
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #dc2626;
-            border-radius: 3px;
+        .thumbnail-placeholder {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        }
+        
+        .dark .thumbnail-placeholder {
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
         }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
+<body>
     <div id="root"></div>
     
     <script type="text/babel">
-        const { useState, useEffect, useContext, createContext } = React;
+        const { useState, useEffect, useRef } = React;
         const { motion, AnimatePresence } = window.Motion;
         
-        // Firebase Configuration - Replace with your actual config
+        // Firebase Configuration - Replace with your config
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "your-project.firebaseapp.com",
@@ -144,69 +125,635 @@
             appId: "1:123456789:web:abcdef123456"
         };
         
-        // Initialize Firebase (Mock mode for demo)
-        let auth, db;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            db = firebase.firestore();
-        } catch (e) {
-            console.log("Firebase not configured - running in demo mode");
-        }
+        // Initialize Firebase (commented out for demo - using localStorage instead)
+        // firebase.initializeApp(firebaseConfig);
+        // const db = firebase.firestore();
+        // const auth = firebase.auth();
         
-        // Contexts
-        const ThemeContext = createContext();
-        const AuthContext = createContext();
-        const NotificationContext = createContext();
-        
-        // Mock Data for Demo
-        const MOCK_LINKS = [
-            {
-                id: '1',
-                url: 'https://chat.whatsapp.com/example1',
-                title: 'Movie Buffs Group',
-                category: 'WhatsApp',
-                subCategory: 'Movie',
-                thumbnail: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400',
-                author: 'John Doe',
-                authorPhoto: 'https://i.pravatar.cc/150?img=1',
-                createdAt: new Date().toISOString(),
-                likes: 45,
-                isLive: true
-            },
-            {
-                id: '2',
-                url: 'https://t.me/funnyvideos',
-                title: 'Funny Videos Daily',
-                category: 'Telegram',
-                subCategory: 'Funny',
-                thumbnail: 'https://images.unsplash.com/photo-1527224857830-43a7acc85260?w=400',
-                author: 'Jane Smith',
-                authorPhoto: 'https://i.pravatar.cc/150?img=2',
-                createdAt: new Date(Date.now() - 3600000).toISOString(),
-                likes: 128,
-                isLive: true
-            },
-            {
-                id: '3',
-                url: 'https://facebook.com/groups/education',
-                title: 'Education Hub',
-                category: 'Facebook',
-                subCategory: 'Education',
-                thumbnail: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400',
-                author: 'Mike Johnson',
-                authorPhoto: 'https://i.pravatar.cc/150?img=3',
-                createdAt: new Date(Date.now() - 7200000).toISOString(),
-                likes: 89,
-                isLive: false
-            }
-        ];
-        
-        // Components
-        
-        const ThemeProvider = ({ children }) => {
-            const [darkMode, setDarkMode] = useState(true);
+        // Custom hook for localStorage (simulating Firebase)
+        const useLocalStorage = (key, initialValue) => {
+            const [storedValue, setStoredValue] = useState(() => {
+                try {
+                    const item = window.localStorage.getItem(key);
+                    return item ? JSON.parse(item) : initialValue;
+                } catch (error) {
+                    return initialValue;
+                }
+            });
             
+            const setValue = (value) => {
+                try {
+                    setStoredValue(value);
+                    window.localStorage.setItem(key, JSON.stringify(value));
+                } catch (error) {
+                    console.error(error);
+                }
+            };
+            
+            return [storedValue, setValue];
+        };
+        
+        // Notification Component
+        const Notification = ({ message, type, onClose }) => {
+            useEffect(() => {
+                const timer = setTimeout(onClose, 3000);
+                return () => clearTimeout(timer);
+            }, [onClose]);
+            
+            return (
+                <motion.div
+                    initial={{ opacity: 0, y: -50, x: "-50%" }}
+                    animate={{ opacity: 1, y: 0, x: "-50%" }}
+                    exit={{ opacity: 0, y: -50, x: "-50%" }}
+                    className={`fixed top-4 left-1/2 z-50 px-6 py-3 rounded-lg shadow-lg ${
+                        type === 'success' ? 'bg-green-500' : 'bg-primary'
+                    } text-white font-medium`}
+                >
+                    <div className="flex items-center gap-2">
+                        <i data-lucide={type === 'success' ? 'check-circle' : 'bell'} className="w-5 h-5"></i>
+                        {message}
+                    </div>
+                </motion.div>
+            );
+        };
+        
+        // Sidebar Component
+        const Sidebar = ({ isOpen, onClose, darkMode, setCurrentView, unreadCount }) => {
+            const menuItems = [
+                { icon: 'home', label: 'Home', view: 'home' },
+                { icon: 'code', label: 'Developer Page', view: 'developer', external: true },
+                { icon: 'plus-circle', label: 'Submit Link', view: 'submit' },
+                { icon: 'bell', label: 'Notifications', view: 'notifications', badge: unreadCount },
+                { icon: 'film', label: 'Movies', view: 'category', category: 'Movie' },
+                { icon: 'send', label: 'Telegram', view: 'category', category: 'Telegram' },
+                { icon: 'facebook', label: 'Facebook', view: 'category', category: 'Facebook' },
+                { icon: 'message-circle', label: 'WhatsApp', view: 'category', category: 'WhatsApp' },
+            ];
+            
+            const handleClick = (item) => {
+                if (item.external) {
+                    window.open('https://github.com', '_blank');
+                } else if (item.category) {
+                    setCurrentView({ view: 'category', category: item.category });
+                } else {
+                    setCurrentView({ view: item.view });
+                }
+                if (window.innerWidth < 768) onClose();
+            };
+            
+            return (
+                <>
+                    <AnimatePresence>
+                        {isOpen && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={onClose}
+                                className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                            />
+                        )}
+                    </AnimatePresence>
+                    
+                    <motion.aside
+                        initial={{ x: -300 }}
+                        animate={{ x: isOpen ? 0 : -300 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        className={`fixed left-0 top-0 h-full w-64 ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} border-r z-50 overflow-y-auto`}
+                    >
+                        <div className="p-6">
+                            <div className="flex items-center justify-between mb-8">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                                        <i data-lucide="link" className="w-6 h-6 text-white"></i>
+                                    </div>
+                                    <span className="text-xl font-bold gradient-text">Link Wave</span>
+                                </div>
+                                <button onClick={onClose} className="md:hidden">
+                                    <i data-lucide="x" className="w-6 h-6"></i>
+                                </button>
+                            </div>
+                            
+                            <nav className="space-y-2">
+                                {menuItems.map((item, index) => (
+                                    <motion.button
+                                        key={index}
+                                        whileHover={{ x: 5 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => handleClick(item)}
+                                        className={`sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-lg ${
+                                            darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-primary'
+                                        }`}
+                                    >
+                                        <i data-lucide={item.icon} className="w-5 h-5"></i>
+                                        <span className="flex-1 text-left">{item.label}</span>
+                                        {item.badge > 0 && (
+                                            <span className="notification-badge bg-primary text-white text-xs px-2 py-1 rounded-full">
+                                                {item.badge}
+                                            </span>
+                                        )}
+                                        {item.external && <i data-lucide="external-link" className="w-4 h-4 opacity-50"></i>}
+                                    </motion.button>
+                                ))}
+                            </nav>
+                        </div>
+                    </motion.aside>
+                </>
+            );
+        };
+        
+        // Header Component
+        const Header = ({ darkMode, setDarkMode, onMenuClick, notifications }) => {
+            const [showNotifications, setShowNotifications] = useState(false);
+            
+            return (
+                <motion.header
+                    initial={{ y: -100 }}
+                    animate={{ y: 0 }}
+                    className={`sticky top-0 z-30 ${darkMode ? 'bg-gray-900/95 border-gray-800' : 'bg-white/95 border-gray-200'} border-b backdrop-blur-sm`}
+                >
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center justify-between h-16">
+                            <div className="flex items-center gap-4">
+                                <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={onMenuClick}
+                                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                                >
+                                    <i data-lucide="menu" className="w-6 h-6"></i>
+                                </motion.button>
+                                
+                                <div className="hidden md:flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                                        <i data-lucide="link" className="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <span className="text-lg font-bold gradient-text">Link Wave</span>
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-4">
+                                <div className="relative">
+                                    <motion.button
+                                        whileHover={{ scale: 1.1 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={() => setShowNotifications(!showNotifications)}
+                                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 relative"
+                                    >
+                                        <i data-lucide="bell" className="w-5 h-5"></i>
+                                        {notifications.length > 0 && (
+                                            <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full notification-badge"></span>
+                                        )}
+                                    </motion.button>
+                                    
+                                    <AnimatePresence>
+                                        {showNotifications && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 10 }}
+                                                className={`absolute right-0 mt-2 w-80 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl shadow-xl overflow-hidden`}
+                                            >
+                                                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                                                    <h3 className="font-semibold">Notifications</h3>
+                                                </div>
+                                                <div className="max-h-64 overflow-y-auto">
+                                                    {notifications.length === 0 ? (
+                                                        <p className="p-4 text-center text-gray-500">No new notifications</p>
+                                                    ) : (
+                                                        notifications.map((notif, idx) => (
+                                                            <div key={idx} className="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                                <p className="text-sm font-medium">{notif.title}</p>
+                                                                <p className="text-xs text-gray-500 mt-1">{notif.time}</p>
+                                                            </div>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                                
+                                <motion.button
+                                    whileHover={{ scale: 1.1, rotate: 180 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => setDarkMode(!darkMode)}
+                                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                                >
+                                    <i data-lucide={darkMode ? 'sun' : 'moon'} className="w-5 h-5"></i>
+                                </motion.button>
+                            </div>
+                        </div>
+                    </div>
+                </motion.header>
+            );
+        };
+        
+        // Hero Section
+        const Hero = ({ darkMode }) => {
+            const text = "Discover & Share Amazing Links";
+            const [displayText, setDisplayText] = useState("");
+            const [index, setIndex] = useState(0);
+            
+            useEffect(() => {
+                if (index < text.length) {
+                    const timeout = setTimeout(() => {
+                        setDisplayText(prev => prev + text[index]);
+                        setIndex(index + 1);
+                    }, 50);
+                    return () => clearTimeout(timeout);
+                }
+            }, [index]);
+            
+            return (
+                <motion.section
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="relative overflow-hidden py-20 px-4"
+                >
+                    <div className="absolute inset-0 wave-animation opacity-30"></div>
+                    
+                    <div className="max-w-4xl mx-auto text-center relative z-10">
+                        <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+                            className="w-20 h-20 mx-auto mb-8 bg-primary rounded-2xl flex items-center justify-center shadow-2xl"
+                        >
+                            <i data-lucide="waves" className="w-10 h-10 text-white"></i>
+                        </motion.div>
+                        
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="text-4xl md:text-6xl font-bold mb-6"
+                        >
+                            <span className="gradient-text">{displayText}</span>
+                            <span className="animate-pulse">|</span>
+                        </motion.h1>
+                        
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                            className={`text-lg md:text-xl mb-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}
+                        >
+                            Your curated directory of the best links on the internet.
+                            <br className="hidden md:block" />
+                            Join our community and start sharing today.
+                        </motion.p>
+                        
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.7 }}
+                            className="flex flex-wrap justify-center gap-4"
+                        >
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary">
+                                <i data-lucide="film" className="w-4 h-4"></i>
+                                <span className="text-sm font-medium">Movies</span>
+                            </div>
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 text-blue-500">
+                                <i data-lucide="send" className="w-4 h-4"></i>
+                                <span className="text-sm font-medium">Telegram</span>
+                            </div>
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 text-indigo-500">
+                                <i data-lucide="facebook" className="w-4 h-4"></i>
+                                <span className="text-sm font-medium">Facebook</span>
+                            </div>
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 text-green-500">
+                                <i data-lucide="message-circle" className="w-4 h-4"></i>
+                                <span className="text-sm font-medium">WhatsApp</span>
+                            </div>
+                        </motion.div>
+                    </div>
+                </motion.section>
+            );
+        };
+        
+        // Link Card Component
+        const LinkCard = ({ link, darkMode, onShare }) => {
+            const [imageError, setImageError] = useState(false);
+            
+            const categoryColors = {
+                Movie: 'bg-red-500/10 text-red-500 border-red-500/20',
+                Telegram: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+                Facebook: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
+                WhatsApp: 'bg-green-500/10 text-green-500 border-green-500/20'
+            };
+            
+            const categoryIcons = {
+                Movie: 'film',
+                Telegram: 'send',
+                Facebook: 'facebook',
+                WhatsApp: 'message-circle'
+            };
+            
+            const getDomain = (url) => {
+                try {
+                    return new URL(url).hostname.replace('www.', '');
+                } catch {
+                    return url;
+                }
+            };
+            
+            const getThumbnail = (url) => {
+                if (imageError) return null;
+                try {
+                    const domain = new URL(url).hostname;
+                    return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+                } catch {
+                    return null;
+                }
+            };
+            
+            return (
+                <motion.div
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    whileHover={{ y: -5 }}
+                    className={`card-hover ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl overflow-hidden`}
+                >
+                    <div className="h-32 thumbnail-placeholder flex items-center justify-center relative overflow-hidden">
+                        {getThumbnail(link.url) ? (
+                            <img
+                                src={getThumbnail(link.url)}
+                                alt=""
+                                className="w-full h-full object-cover"
+                                onError={() => setImageError(true)}
+                            />
+                        ) : (
+                            <div className="text-center">
+                                <i data-lucide="link" className="w-12 h-12 mx-auto mb-2 opacity-30"></i>
+                                <span className="text-sm opacity-50">{getDomain(link.url)}</span>
+                            </div>
+                        )}
+                        <div className="absolute top-3 right-3">
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium border ${categoryColors[link.category]}`}>
+                                <i data-lucide={categoryIcons[link.category]} className="w-3 h-3 inline mr-1"></i>
+                                {link.category}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div className="p-4">
+                        <h3 className="font-semibold mb-2 line-clamp-1" title={link.title || link.url}>
+                            {link.title || getDomain(link.url)}
+                        </h3>
+                        <p className={`text-sm mb-4 line-clamp-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            {link.description || `Shared link from ${link.category} category`}
+                        </p>
+                        
+                        <div className="flex items-center justify-between">
+                            <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                {new Date(link.timestamp).toLocaleDateString()}
+                            </span>
+                            
+                            <div className="flex items-center gap-2">
+                                <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => onShare(link)}
+                                    className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+                                >
+                                    <i data-lucide="share-2" className="w-4 h-4"></i>
+                                </motion.button>
+                                <motion.a
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    href={link.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-2 rounded-lg bg-primary text-white hover:bg-primary-dark"
+                                >
+                                    <i data-lucide="external-link" className="w-4 h-4"></i>
+                                </motion.a>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+            );
+        };
+        
+        // Submit Form Component
+        const SubmitForm = ({ darkMode, onSubmit, onClose }) => {
+            const [url, setUrl] = useState('');
+            const [category, setCategory] = useState('Movie');
+            const [title, setTitle] = useState('');
+            const [description, setDescription] = useState('');
+            const [loading, setLoading] = useState(false);
+            
+            const categories = [
+                { value: 'Movie', icon: 'film', color: 'red' },
+                { value: 'Telegram', icon: 'send', color: 'blue' },
+                { value: 'Facebook', icon: 'facebook', color: 'indigo' },
+                { value: 'WhatsApp', icon: 'message-circle', color: 'green' }
+            ];
+            
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                if (!url) return;
+                
+                setLoading(true);
+                await onSubmit({ url, category, title, description });
+                setLoading(false);
+                setUrl('');
+                setTitle('');
+                setDescription('');
+            };
+            
+            return (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+                    onClick={onClose}
+                >
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        onClick={e => e.stopPropagation()}
+                        className={`w-full max-w-lg ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} border rounded-2xl p-6 shadow-2xl`}
+                    >
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-2xl font-bold gradient-text">Submit New Link</h2>
+                            <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                                <i data-lucide="x" className="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Link URL *</label>
+                                <div className="relative">
+                                    <i data-lucide="link" className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                                    <input
+                                        type="url"
+                                        value={url}
+                                        onChange={(e) => setUrl(e.target.value)}
+                                        placeholder="https://example.com"
+                                        className={`w-full pl-10 pr-4 py-3 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700 focus:border-primary' : 'bg-gray-50 border-gray-200 focus:border-primary'} focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Category *</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {categories.map((cat) => (
+                                        <motion.button
+                                            key={cat.value}
+                                            type="button"
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            onClick={() => setCategory(cat.value)}
+                                            className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                                                category === cat.value
+                                                    ? `border-${cat.color}-500 bg-${cat.color}-500/10 text-${cat.color}-500`
+                                                    : darkMode ? 'border-gray-700 hover:border-gray-600' : 'border-gray-200 hover:border-gray-300'
+                                            }`}
+                                        >
+                                            <i data-lucide={cat.icon} className="w-5 h-5"></i>
+                                            <span className="font-medium">{cat.value}</span>
+                                        </motion.button>
+                                    ))}
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Title (Optional)</label>
+                                <input
+                                    type="text"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    placeholder="Enter link title"
+                                    className={`w-full px-4 py-3 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700 focus:border-primary' : 'bg-gray-50 border-gray-200 focus:border-primary'} focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Description (Optional)</label>
+                                <textarea
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    placeholder="Enter link description"
+                                    rows={3}
+                                    className={`w-full px-4 py-3 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700 focus:border-primary' : 'bg-gray-50 border-gray-200 focus:border-primary'} focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none`}
+                                />
+                            </div>
+                            
+                            <motion.button
+                                type="submit"
+                                disabled={loading || !url}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="w-full py-3 bg-primary text-white rounded-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-dark transition-colors"
+                            >
+                                {loading ? (
+                                    <motion.div
+                                        animate={{ rotate: 360 }}
+                                        transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                                    >
+                                        <i data-lucide="loader-2" className="w-5 h-5"></i>
+                                    </motion.div>
+                                ) : (
+                                    <>
+                                        <i data-lucide="plus" className="w-5 h-5"></i>
+                                        Submit Link
+                                    </>
+                                )}
+                            </motion.button>
+                        </form>
+                    </motion.div>
+                </motion.div>
+            );
+        };
+        
+        // Share Modal Component
+        const ShareModal = ({ link, onClose }) => {
+            const shareOptions = [
+                { name: 'Twitter', icon: 'twitter', color: 'bg-sky-500', url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(link.url)}` },
+                { name: 'Facebook', icon: 'facebook', color: 'bg-blue-600', url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link.url)}` },
+                { name: 'WhatsApp', icon: 'message-circle', color: 'bg-green-500', url: `https://wa.me/?text=${encodeURIComponent(link.url)}` },
+                { name: 'Telegram', icon: 'send', color: 'bg-sky-600', url: `https://t.me/share/url?url=${encodeURIComponent(link.url)}` },
+                { name: 'Copy Link', icon: 'copy', color: 'bg-gray-600', action: 'copy' },
+                { name: 'Email', icon: 'mail', color: 'bg-red-500', url: `mailto:?subject=Check out this link&body=${encodeURIComponent(link.url)}` }
+            ];
+            
+            const handleShare = async (option) => {
+                if (option.action === 'copy') {
+                    await navigator.clipboard.writeText(link.url);
+                    onClose();
+                } else if (option.url) {
+                    window.open(option.url, '_blank', 'width=600,height=400');
+                }
+            };
+            
+            return (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+                    onClick={onClose}
+                >
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        onClick={e => e.stopPropagation()}
+                        className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 w-full max-w-md"
+                    >
+                        <h3 className="text-xl font-bold mb-4 text-center">Share Link</h3>
+                        <div className="grid grid-cols-3 gap-4">
+                            {shareOptions.map((option) => (
+                                <motion.button
+                                    key={option.name}
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => handleShare(option)}
+                                    className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                >
+                                    <div className={`w-12 h-12 ${option.color} rounded-full flex items-center justify-center text-white`}>
+                                        <i data-lucide={option.icon} className="w-6 h-6"></i>
+                                    </div>
+                                    <span className="text-sm font-medium">{option.name}</span>
+                                </motion.button>
+                            ))}
+                        </div>
+                    </motion.div>
+                </motion.div>
+            );
+        };
+        
+        // Main App Component
+        const App = () => {
+            const [darkMode, setDarkMode] = useLocalStorage('darkMode', false);
+            const [sidebarOpen, setSidebarOpen] = useState(false);
+            const [currentView, setCurrentView] = useState({ view: 'home' });
+            const [links, setLinks] = useLocalStorage('links', []);
+            const [notifications, setNotifications] = useLocalStorage('notifications', []);
+            const [showSubmit, setShowSubmit] = useState(false);
+            const [showShare, setShowShare] = useState(null);
+            const [toast, setToast] = useState(null);
+            const [filterCategory, setFilterCategory] = useState('All');
+            
+            // Initialize Lucide icons
+            useEffect(() => {
+                lucide.createIcons();
+            });
+            
+            // Re-initialize icons when state changes
+            useEffect(() => {
+                lucide.createIcons();
+            }, [links, notifications, currentView, showSubmit, showShare, toast, sidebarOpen]);
+            
+            // Apply dark mode
             useEffect(() => {
                 if (darkMode) {
                     document.documentElement.classList.add('dark');
@@ -215,787 +762,221 @@
                 }
             }, [darkMode]);
             
-            return (
-                <ThemeContext.Provider value={{ darkMode, setDarkMode }}>
-                    {children}
-                </ThemeContext.Provider>
-            );
-        };
-        
-        const AuthProvider = ({ children }) => {
-            const [user, setUser] = useState(null);
-            const [loading, setLoading] = useState(true);
-            
+            // Add sample data if empty
             useEffect(() => {
-                if (auth) {
-                    const unsubscribe = auth.onAuthStateChanged((user) => {
-                        setUser(user);
-                        setLoading(false);
-                    });
-                    return () => unsubscribe();
-                } else {
-                    // Demo mode
-                    const savedUser = localStorage.getItem('linkwave_user');
-                    if (savedUser) setUser(JSON.parse(savedUser));
-                    setLoading(false);
+                if (links.length === 0) {
+                    const sampleLinks = [
+                        { id: 1, url: 'https://www.imdb.com', title: 'IMDb - Movies & TV', category: 'Movie', description: 'World\'s most popular source for movie info', timestamp: Date.now() - 86400000 },
+                        { id: 2, url: 'https://t.me/telegram', title: 'Telegram Messenger', category: 'Telegram', description: 'Fast and secure messaging app', timestamp: Date.now() - 172800000 },
+                        { id: 3, url: 'https://www.facebook.com', title: 'Facebook', category: 'Facebook', description: 'Connect with friends and family', timestamp: Date.now() - 259200000 },
+                        { id: 4, url: 'https://web.whatsapp.com', title: 'WhatsApp Web', category: 'WhatsApp', description: 'Free messaging and calling', timestamp: Date.now() - 345600000 }
+                    ];
+                    setLinks(sampleLinks);
                 }
             }, []);
             
-            const signInWithGoogle = async () => {
-                if (auth) {
-                    const provider = new firebase.auth.GoogleAuthProvider();
-                    try {
-                        const result = await auth.signInWithPopup(provider);
-                        return result.user;
-                    } catch (error) {
-                        console.error("Auth error:", error);
-                    }
-                } else {
-                    // Demo mode
-                    const mockUser = {
-                        uid: 'demo123',
-                        displayName: 'Demo User',
-                        email: 'demo@example.com',
-                        photoURL: 'https://i.pravatar.cc/150?img=8'
-                    };
-                    localStorage.setItem('linkwave_user', JSON.stringify(mockUser));
-                    setUser(mockUser);
-                    return mockUser;
-                }
-            };
-            
-            const signOut = async () => {
-                if (auth) {
-                    await auth.signOut();
-                }
-                localStorage.removeItem('linkwave_user');
-                setUser(null);
-            };
-            
-            return (
-                <AuthContext.Provider value={{ user, signInWithGoogle, signOut, loading }}>
-                    {children}
-                </AuthContext.Provider>
-            );
-        };
-        
-        const NotificationProvider = ({ children }) => {
-            const [notifications, setNotifications] = useState([]);
-            
-            const addNotification = (message, type = 'info') => {
-                const id = Date.now();
-                setNotifications(prev => [...prev, { id, message, type }]);
-                setTimeout(() => {
-                    setNotifications(prev => prev.filter(n => n.id !== id));
-                }, 3000);
-            };
-            
-            return (
-                <NotificationContext.Provider value={{ addNotification }}>
-                    {children}
-                    <div className="fixed top-4 right-4 z-50 space-y-2">
-                        <AnimatePresence>
-                            {notifications.map(notif => (
-                                <motion.div
-                                    key={notif.id}
-                                    initial={{ opacity: 0, x: 100 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: 100 }}
-                                    className={`px-6 py-3 rounded-lg shadow-lg ${
-                                        notif.type === 'success' ? 'bg-green-600' :
-                                        notif.type === 'error' ? 'bg-red-600' :
-                                        'bg-primary-600'
-                                    } text-white font-medium`}
-                                >
-                                    {notif.message}
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
-                    </div>
-                </NotificationContext.Provider>
-            );
-        };
-        
-        const AgeVerificationModal = ({ onVerify }) => {
-            const [age, setAge] = useState('');
-            const [error, setError] = useState('');
-            
-            const handleVerify = () => {
-                if (parseInt(age) >= 18) {
-                    localStorage.setItem('linkwave_age_verified', 'true');
-                    onVerify();
-                } else {
-                    setError('You must be 18 or older to access this platform.');
-                }
-            };
-            
-            return (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-                >
-                    <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="bg-white dark:bg-gray-900 rounded-2xl p-8 max-w-md w-full border border-primary-500/30 shadow-2xl"
-                    >
-                        <div className="text-center mb-6">
-                            <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i data-lucide="shield-check" className="w-8 h-8 text-white"></i>
-                            </div>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Age Verification</h2>
-                            <p className="text-gray-600 dark:text-gray-400">This platform contains user-generated content. Please verify your age.</p>
-                        </div>
-                        
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Enter your age
-                                </label>
-                                <input
-                                    type="number"
-                                    value={age}
-                                    onChange={(e) => setAge(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-                                    placeholder="18"
-                                />
-                            </div>
-                            
-                            {error && (
-                                <motion.p
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    className="text-red-500 text-sm"
-                                >
-                                    {error}
-                                </motion.p>
-                            )}
-                            
-                            <button
-                                onClick={handleVerify}
-                                className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-semibold transition-colors"
-                            >
-                                Verify & Continue
-                            </button>
-                            
-                            <p className="text-xs text-center text-gray-500 dark:text-gray-500">
-                                By continuing, you agree to our Terms of Service and Privacy Policy
-                            </p>
-                        </div>
-                    </motion.div>
-                </motion.div>
-            );
-        };
-        
-        const Sidebar = ({ activeTab, setActiveTab }) => {
-            const { user, signOut } = useContext(AuthContext);
-            const { darkMode, setDarkMode } = useContext(ThemeContext);
-            
-            const menuItems = [
-                { id: 'home', label: 'Home', icon: 'home' },
-                { id: 'developer', label: 'Developer Page', icon: 'code-2' },
-                { id: 'submit', label: 'Submit Link', icon: 'plus-circle' },
-            ];
-            
-            return (
-                <aside className="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen fixed left-0 top-0 overflow-y-auto custom-scrollbar">
-                    <div className="p-6">
-                        <div className="flex items-center gap-3 mb-8">
-                            <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
-                                <i data-lucide="link" className="w-6 h-6 text-white"></i>
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Link Wave</h1>
-                                <p className="text-xs text-primary-600 font-medium">Share & Discover</p>
-                            </div>
-                        </div>
-                        
-                        <nav className="space-y-2">
-                            {menuItems.map(item => (
-                                <button
-                                    key={item.id}
-                                    onClick={() => setActiveTab(item.id)}
-                                    className={`sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left ${
-                                        activeTab === item.id
-                                            ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 border-l-3 border-primary-600'
-                                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                                    }`}
-                                >
-                                    <i data-lucide={item.icon} className="w-5 h-5"></i>
-                                    <span className="font-medium">{item.label}</span>
-                                </button>
-                            ))}
-                        </nav>
-                        
-                        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-800">
-                            <div className="flex items-center justify-between mb-4">
-                                <span className="text-sm text-gray-600 dark:text-gray-400">Theme</span>
-                                <button
-                                    onClick={() => setDarkMode(!darkMode)}
-                                    className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-primary-600 transition-colors"
-                                >
-                                    <i data-lucide={darkMode ? 'sun' : 'moon'} className="w-5 h-5"></i>
-                                </button>
-                            </div>
-                            
-                            {user ? (
-                                <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-                                    <img
-                                        src={user.photoURL || 'https://i.pravatar.cc/150'}
-                                        alt={user.displayName}
-                                        className="w-10 h-10 rounded-full"
-                                    />
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                            {user.displayName}
-                                        </p>
-                                        <button
-                                            onClick={signOut}
-                                            className="text-xs text-primary-600 hover:text-primary-700"
-                                        >
-                                            Sign Out
-                                        </button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="text-sm text-gray-500 dark:text-gray-500 text-center">
-                                    Sign in to submit links
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </aside>
-            );
-        };
-        
-        const HeroSection = () => {
-            return (
-                <motion.section
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-900 via-gray-900 to-black p-8 md:p-12 mb-8"
-                >
-                    <div className="absolute inset-0 opacity-30">
-                        <div className="absolute top-0 left-0 w-96 h-96 bg-primary-600 rounded-full filter blur-3xl animate-pulse-slow"></div>
-                        <div className="absolute bottom-0 right-0 w-96 h-96 bg-red-600 rounded-full filter blur-3xl animate-pulse-slow" style={{animationDelay: '1s'}}></div>
-                    </div>
-                    
-                    <div className="relative z-10 max-w-3xl">
-                        <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ delay: 0.2, type: "spring" }}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm mb-6"
-                        >
-                            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                            Live Platform
-                        </motion.div>
-                        
-                        <motion.h1
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 }}
-                            className="text-4xl md:text-6xl font-bold text-white mb-4"
-                        >
-                            Welcome to <span className="gradient-text">Link Wave</span>
-                        </motion.h1>
-                        
-                        <motion.p
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.4 }}
-                            className="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl"
-                        >
-                            Discover and share amazing WhatsApp, Telegram, and Facebook groups. 
-                            Connect with communities that match your interests.
-                        </motion.p>
-                        
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
-                            className="flex flex-wrap gap-4"
-                        >
-                            <div className="flex items-center gap-2 text-gray-400">
-                                <i data-lucide="users" className="w-5 h-5"></i>
-                                <span>10K+ Active Users</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-gray-400">
-                                <i data-lucide="link" className="w-5 h-5"></i>
-                                <span>5K+ Shared Links</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-gray-400">
-                                <i data-lucide="globe" className="w-5 h-5"></i>
-                                <span>Global Community</span>
-                            </div>
-                        </motion.div>
-                    </div>
-                </motion.section>
-            );
-        };
-        
-        const LinkCard = ({ link }) => {
-            const { addNotification } = useContext(NotificationContext);
-            
-            const handleShare = async (platform) => {
-                const text = `Check out this ${link.category} group: ${link.title}`;
-                const url = link.url;
+            const handleSubmit = async (formData) => {
+                const newLink = {
+                    id: Date.now(),
+                    ...formData,
+                    timestamp: Date.now()
+                };
                 
-                if (navigator.share) {
-                    try {
-                        await navigator.share({ title: link.title, text, url });
-                    } catch (err) {
-                        console.log('Share canceled');
-                    }
-                } else {
-                    navigator.clipboard.writeText(`${text} ${url}`);
-                    addNotification('Link copied to clipboard!', 'success');
-                }
+                setLinks([newLink, ...links]);
+                
+                // Add notification
+                const newNotification = {
+                    id: Date.now(),
+                    title: `New ${formData.category} link added!`,
+                    time: 'Just now'
+                };
+                setNotifications([newNotification, ...notifications].slice(0, 10));
+                
+                setShowSubmit(false);
+                setToast({ message: 'Link submitted successfully!', type: 'success' });
             };
             
-            const categoryColors = {
-                WhatsApp: 'bg-green-500',
-                Telegram: 'bg-blue-500',
-                Facebook: 'bg-indigo-500'
+            const handleShare = (link) => {
+                setShowShare(link);
             };
             
-            return (
-                <motion.div
-                    layout
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="link-card glass-effect rounded-2xl overflow-hidden group"
-                >
-                    <div className="relative h-48 overflow-hidden">
-                        <img
-                            src={link.thumbnail}
-                            alt={link.title}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                        
-                        {link.isLive && (
-                            <div className="absolute top-3 left-3 flex items-center gap-2 px-3 py-1 bg-red-600 rounded-full text-white text-xs font-bold live-indicator">
-                                <span className="w-2 h-2 bg-white rounded-full"></span>
-                                LIVE
-                            </div>
-                        )}
-                        
-                        <div className={`absolute top-3 right-3 px-3 py-1 ${categoryColors[link.category]} rounded-full text-white text-xs font-semibold`}>
-                            {link.category}
-                        </div>
-                        
-                        <div className="absolute bottom-3 left-3 right-3">
-                            <span className="inline-block px-2 py-1 bg-white/20 backdrop-blur-sm rounded text-white text-xs mb-2">
-                                {link.subCategory}
-                            </span>
-                            <h3 className="text-white font-bold text-lg line-clamp-1">{link.title}</h3>
-                        </div>
-                    </div>
-                    
-                    <div className="p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                            <img
-                                src={link.authorPhoto}
-                                alt={link.author}
-                                className="w-8 h-8 rounded-full border-2 border-primary-500"
-                            />
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                    {link.author}
-                                </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    {new Date(link.createdAt).toLocaleDateString()}
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <button className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-primary-600 transition-colors">
-                                    <i data-lucide="heart" className="w-4 h-4"></i>
-                                    <span className="text-sm">{link.likes}</span>
-                                </button>
-                                <button 
-                                    onClick={() => handleShare()}
-                                    className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-primary-600 transition-colors"
-                                >
-                                    <i data-lucide="share-2" className="w-4 h-4"></i>
-                                </button>
-                            </div>
-                            
-                            <a
-                                href={link.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                            >
-                                Join
-                                <i data-lucide="external-link" className="w-4 h-4"></i>
-                            </a>
-                        </div>
-                    </div>
-                </motion.div>
-            );
-        };
-        
-        const FilterBar = ({ selectedCategory, setSelectedCategory, selectedSubCategory, setSelectedSubCategory }) => {
-            const categories = ['All', 'WhatsApp', 'Telegram', 'Facebook'];
-            const subCategories = ['All', 'Movie', 'Chat', 'Funny', 'Education'];
+            const filteredLinks = currentView.view === 'category' && currentView.category
+                ? links.filter(l => l.category === currentView.category)
+                : filterCategory === 'All'
+                    ? links
+                    : links.filter(l => l.category === filterCategory);
+            
+            const unreadCount = notifications.length;
             
             return (
-                <div className="mb-8 space-y-4">
-                    <div className="flex flex-wrap gap-2">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">Platform:</span>
-                        {categories.map(cat => (
-                            <button
-                                key={cat}
-                                onClick={() => setSelectedCategory(cat)}
-                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                                    selectedCategory === cat
-                                        ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30'
-                                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-                                }`}
-                            >
-                                {cat}
-                            </button>
-                        ))}
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-2">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">Category:</span>
-                        {subCategories.map(sub => (
-                            <button
-                                key={sub}
-                                onClick={() => setSelectedSubCategory(sub)}
-                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                                    selectedSubCategory === sub
-                                        ? 'bg-red-600 text-white shadow-lg shadow-red-600/30'
-                                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-                                }`}
-                            >
-                                {sub}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            );
-        };
-        
-        const HomePage = () => {
-            const [links, setLinks] = useState(MOCK_LINKS);
-            const [selectedCategory, setSelectedCategory] = useState('All');
-            const [selectedSubCategory, setSelectedSubCategory] = useState('All');
-            
-            const filteredLinks = links.filter(link => {
-                const matchCategory = selectedCategory === 'All' || link.category === selectedCategory;
-                const matchSub = selectedSubCategory === 'All' || link.subCategory === selectedSubCategory;
-                return matchCategory && matchSub;
-            });
-            
-            return (
-                <div className="space-y-6">
-                    <HeroSection />
-                    
-                    <FilterBar
-                        selectedCategory={selectedCategory}
-                        setSelectedCategory={setSelectedCategory}
-                        selectedSubCategory={selectedSubCategory}
-                        setSelectedSubCategory={setSelectedSubCategory}
+                <div className={`min-h-screen ${darkMode ? 'bg-gray-950 text-white' : 'bg-gray-50 text-gray-900'} transition-colors duration-300`}>
+                    <Sidebar
+                        isOpen={sidebarOpen}
+                        onClose={() => setSidebarOpen(false)}
+                        darkMode={darkMode}
+                        setCurrentView={(view) => {
+                            setCurrentView(view);
+                            if (view.view === 'submit') setShowSubmit(true);
+                        }}
+                        unreadCount={unreadCount}
                     />
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <AnimatePresence>
-                            {filteredLinks.map(link => (
-                                <LinkCard key={link.id} link={link} />
-                            ))}
-                        </AnimatePresence>
-                    </div>
-                    
-                    {filteredLinks.length === 0 && (
-                        <div className="text-center py-12">
-                            <i data-lucide="search-x" className="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
-                            <p className="text-gray-600 dark:text-gray-400">No links found matching your criteria.</p>
-                        </div>
-                    )}
-                </div>
-            );
-        };
-        
-        const SubmitLinkPage = () => {
-            const { user, signInWithGoogle } = useContext(AuthContext);
-            const { addNotification } = useContext(NotificationContext);
-            const [formData, setFormData] = useState({
-                url: '',
-                category: 'WhatsApp',
-                subCategory: 'Movie',
-                title: ''
-            });
-            const [loading, setLoading] = useState(false);
-            
-            const handleSubmit = async (e) => {
-                e.preventDefault();
-                if (!user) {
-                    addNotification('Please sign in first!', 'error');
-                    return;
-                }
-                
-                setLoading(true);
-                
-                // Simulate submission
-                setTimeout(() => {
-                    addNotification('Link submitted successfully!', 'success');
-                    setFormData({ url: '', category: 'WhatsApp', subCategory: 'Movie', title: '' });
-                    setLoading(false);
-                }, 1500);
-            };
-            
-            if (!user) {
-                return (
-                    <div className="max-w-md mx-auto text-center py-12">
-                        <div className="w-20 h-20 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <i data-lucide="lock" className="w-10 h-10 text-primary-600"></i>
-                        </div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Sign In Required</h2>
-                        <p className="text-gray-600 dark:text-gray-400 mb-6">
-                            Please sign in with your Google account to submit links to our platform.
-                        </p>
-                        <button
-                            onClick={signInWithGoogle}
-                            className="inline-flex items-center gap-3 px-6 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-lg"
-                        >
-                            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
-                            Sign in with Google
-                        </button>
-                    </div>
-                );
-            }
-            
-            return (
-                <div className="max-w-2xl mx-auto">
-                    <div className="mb-8">
-                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Submit a Link</h2>
-                        <p className="text-gray-600 dark:text-gray-400">Share your favorite groups with the community</p>
-                    </div>
-                    
-                    <form onSubmit={handleSubmit} className="glass-effect rounded-2xl p-8 space-y-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Group/Channel URL
-                            </label>
-                            <input
-                                type="url"
-                                required
-                                value={formData.url}
-                                onChange={(e) => setFormData({...formData, url: e.target.value})}
-                                placeholder="https://chat.whatsapp.com/..."
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-                            />
-                        </div>
+                    <div className="md:ml-64">
+                        <Header
+                            darkMode={darkMode}
+                            setDarkMode={setDarkMode}
+                            onMenuClick={() => setSidebarOpen(true)}
+                            notifications={notifications}
+                        />
                         
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                Title/Description
-                            </label>
-                            <input
-                                type="text"
-                                required
-                                value={formData.title}
-                                onChange={(e) => setFormData({...formData, title: e.target.value})}
-                                placeholder="Enter a catchy title..."
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
-                            />
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Platform
-                                </label>
-                                <select
-                                    value={formData.category}
-                                    onChange={(e) => setFormData({...formData, category: e.target.value})}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none"
-                                >
-                                    <option value="WhatsApp">WhatsApp</option>
-                                    <option value="Telegram">Telegram</option>
-                                    <option value="Facebook">Facebook</option>
-                                </select>
-                            </div>
+                        <main className="pb-20">
+                            {currentView.view === 'home' && (
+                                <>
+                                    <Hero darkMode={darkMode} />
+                                    
+                                    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                                        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+                                            <h2 className="text-2xl font-bold">Recent Links</h2>
+                                            
+                                            <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                                                {['All', 'Movie', 'Telegram', 'Facebook', 'WhatsApp'].map((cat) => (
+                                                    <motion.button
+                                                        key={cat}
+                                                        whileHover={{ scale: 1.05 }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                        onClick={() => setFilterCategory(cat)}
+                                                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                                                            filterCategory === cat
+                                                                ? 'bg-primary text-white'
+                                                                : darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                                                        }`}
+                                                    >
+                                                        {cat}
+                                                    </motion.button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        
+                                        <motion.div
+                                            layout
+                                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                                        >
+                                            <AnimatePresence>
+                                                {filteredLinks.map((link) => (
+                                                    <LinkCard
+                                                        key={link.id}
+                                                        link={link}
+                                                        darkMode={darkMode}
+                                                        onShare={handleShare}
+                                                    />
+                                                ))}
+                                            </AnimatePresence>
+                                        </motion.div>
+                                        
+                                        {filteredLinks.length === 0 && (
+                                            <motion.div
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                className="text-center py-20"
+                                            >
+                                                <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                                                    <i data-lucide="inbox" className="w-12 h-12 text-gray-400"></i>
+                                                </div>
+                                                <p className="text-gray-500">No links found in this category</p>
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={() => setShowSubmit(true)}
+                                                    className="mt-4 px-6 py-2 bg-primary text-white rounded-lg font-medium"
+                                                >
+                                                    Add First Link
+                                                </motion.button>
+                                            </motion.div>
+                                        )}
+                                    </section>
+                                </>
+                            )}
                             
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Category
-                                </label>
-                                <select
-                                    value={formData.subCategory}
-                                    onChange={(e) => setFormData({...formData, subCategory: e.target.value})}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none"
-                                >
-                                    <option value="Movie">Movie</option>
-                                    <option value="Chat">Chat</option>
-                                    <option value="Funny">Funny</option>
-                                    <option value="Education">Education</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div className="pt-4">
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full py-4 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
-                            >
-                                {loading ? (
-                                    <>
-                                        <i data-lucide="loader-2" className="w-5 h-5 animate-spin"></i>
-                                        Submitting...
-                                    </>
-                                ) : (
-                                    <>
-                                        <i data-lucide="send" className="w-5 h-5"></i>
-                                        Submit Link
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            );
-        };
-        
-        const DeveloperPage = () => {
-            return (
-                <div className="max-w-4xl mx-auto space-y-8">
-                    <div className="text-center mb-12">
-                        <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Developer Page</h2>
-                        <p className="text-gray-600 dark:text-gray-400">Technical documentation and API information</p>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="glass-effect rounded-2xl p-6">
-                            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-4">
-                                <i data-lucide="code" className="w-6 h-6 text-blue-600"></i>
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">API Documentation</h3>
-                            <p className="text-gray-600 dark:text-gray-400 mb-4">
-                                Access our REST API to fetch links programmatically. Supports GraphQL queries.
-                            </p>
-                            <code className="block bg-gray-100 dark:bg-gray-800 p-3 rounded-lg text-sm text-primary-600">
-                                GET /api/v1/links
-                            </code>
-                        </div>
-                        
-                        <div className="glass-effect rounded-2xl p-6">
-                            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center mb-4">
-                                <i data-lucide="github" className="w-6 h-6 text-green-600"></i>
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Open Source</h3>
-                            <p className="text-gray-600 dark:text-gray-400 mb-4">
-                                Link Wave is open source. Contribute to our GitHub repository.
-                            </p>
-                            <a href="#" className="text-primary-600 hover:text-primary-700 font-medium">
-                                View on GitHub →
-                            </a>
-                        </div>
-                        
-                        <div className="glass-effect rounded-2xl p-6">
-                            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center mb-4">
-                                <i data-lucide="webhook" className="w-6 h-6 text-purple-600"></i>
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Webhooks</h3>
-                            <p className="text-gray-600 dark:text-gray-400 mb-4">
-                                Set up real-time notifications for new link submissions.
-                            </p>
-                            <button className="text-primary-600 hover:text-primary-700 font-medium">
-                                Configure Webhooks →
-                            </button>
-                        </div>
-                        
-                        <div className="glass-effect rounded-2xl p-6">
-                            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center mb-4">
-                                <i data-lucide="shield" className="w-6 h-6 text-orange-600"></i>
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Security</h3>
-                            <p className="text-gray-600 dark:text-gray-400 mb-4">
-                                Learn about our security practices and vulnerability reporting.
-                            </p>
-                            <button className="text-primary-600 hover:text-primary-700 font-medium">
-                                Security Policy →
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div className="glass-effect rounded-2xl p-8 mt-8">
-                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Tech Stack</h3>
-                        <div className="flex flex-wrap gap-3">
-                            {['React', 'Tailwind CSS', 'Firebase', 'Framer Motion', 'Node.js'].map(tech => (
-                                <span key={tech} className="px-4 py-2 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-full text-sm font-medium">
-                                    {tech}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-        
-        const App = () => {
-            const [activeTab, setActiveTab] = useState('home');
-            const [ageVerified, setAgeVerified] = useState(false);
-            
-            useEffect(() => {
-                const verified = localStorage.getItem('linkwave_age_verified');
-                if (verified === 'true') setAgeVerified(true);
-                
-                // Initialize Lucide icons
-                if (window.lucide) {
-                    window.lucide.createIcons();
-                }
-            }, []);
-            
-            useEffect(() => {
-                if (window.lucide) {
-                    window.lucide.createIcons();
-                }
-            }, [activeTab]);
-            
-            const renderContent = () => {
-                switch(activeTab) {
-                    case 'home': return <HomePage />;
-                    case 'developer': return <DeveloperPage />;
-                    case 'submit': return <SubmitLinkPage />;
-                    default: return <HomePage />;
-                }
-            };
-            
-            return (
-                <ThemeProvider>
-                    <AuthProvider>
-                        <NotificationProvider>
-                            <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
-                                {!ageVerified && (
-                                    <AgeVerificationModal onVerify={() => setAgeVerified(true)} />
-                                )}
-                                
-                                <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-                                
-                                <main className="ml-64 p-8 min-h-screen">
-                                    <div className="max-w-7xl mx-auto">
-                                        {renderContent()}
+                            {currentView.view === 'category' && (
+                                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                                    <div className="flex items-center gap-4 mb-8">
+                                        <motion.button
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={() => setCurrentView({ view: 'home' })}
+                                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                                        >
+                                            <i data-lucide="arrow-left" className="w-6 h-6"></i>
+                                        </motion.button>
+                                        <h2 className="text-3xl font-bold">{currentView.category} Links</h2>
                                     </div>
-                                </main>
-                            </div>
-                        </NotificationProvider>
-                    </AuthProvider>
-                </ThemeProvider>
+                                    
+                                    <motion.div
+                                        layout
+                                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                                    >
+                                        {filteredLinks.map((link) => (
+                                            <LinkCard
+                                                key={link.id}
+                                                link={link}
+                                                darkMode={darkMode}
+                                                onShare={handleShare}
+                                            />
+                                        ))}
+                                    </motion.div>
+                                </section>
+                            )}
+                        </main>
+                    </div>
+                    
+                    {/* Floating Action Button */}
+                    <motion.button
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setShowSubmit(true)}
+                        className="fixed bottom-6 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center z-40 hover:bg-primary-dark transition-colors"
+                    >
+                        <i data-lucide="plus" className="w-6 h-6"></i>
+                    </motion.button>
+                    
+                    {/* Modals */}
+                    <AnimatePresence>
+                        {showSubmit && (
+                            <SubmitForm
+                                darkMode={darkMode}
+                                onSubmit={handleSubmit}
+                                onClose={() => setShowSubmit(false)}
+                            />
+                        )}
+                    </AnimatePresence>
+                    
+                    <AnimatePresence>
+                        {showShare && (
+                            <ShareModal
+                                link={showShare}
+                                onClose={() => setShowShare(null)}
+                            />
+                        )}
+                    </AnimatePresence>
+                    
+                    <AnimatePresence>
+                        {toast && (
+                            <Notification
+                                message={toast.message}
+                                type={toast.type}
+                                onClose={() => setToast(null)}
+                            />
+                        )}
+                    </AnimatePresence>
+                </div>
             );
         };
         
+        // Render the app
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
 </body>
-    </html>
+</html>

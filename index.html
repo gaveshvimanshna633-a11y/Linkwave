@@ -89,8 +89,6 @@
             min-width: 300px;
             transform: translateX(120%);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            dark: background: #1e293b;
-            dark: border-color: #38bdf8;
         }
         
         .toast.show { transform: translateX(0); }
@@ -161,21 +159,6 @@
             opacity: 1;
         }
 
-        /* Loading Skeleton */
-        .skeleton {
-            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-        }
-        .dark .skeleton {
-            background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
-            background-size: 200% 100%;
-        }
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
         /* View Transitions */
         .view-section {
             animation: fadeInUp 0.5s ease-out;
@@ -189,6 +172,20 @@
         ::selection {
             background: rgba(14, 165, 233, 0.3);
             color: inherit;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -424,14 +421,14 @@
                 <form id="submit-form" class="space-y-6 relative z-10">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Community Title</label>
+                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Community Title *</label>
                             <input type="text" id="form-title" required 
                                 class="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand-500 focus:border-transparent focus:outline-none transition-all" 
                                 placeholder="e.g., Tech Enthusiasts Hub">
                         </div>
 
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Link URL</label>
+                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Link URL *</label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                                     <i class="fas fa-link"></i>
@@ -444,11 +441,11 @@
 
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Cover Image</label>
-                            <div class="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center hover:border-brand-500 hover:bg-brand-50/50 dark:hover:bg-brand-900/10 transition-all cursor-pointer group" onclick="document.getElementById('form-image').click()">
-                                <input type="file" id="form-image" accept="image/*" class="hidden" onchange="app.handleImagePreview(this)">
+                            <div id="drop-zone" class="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center hover:border-brand-500 hover:bg-brand-50/50 dark:hover:bg-brand-900/10 transition-all cursor-pointer group">
+                                <input type="file" id="form-image" accept="image/*" class="hidden">
                                 <div id="image-preview-container" class="hidden mb-4">
                                     <img id="image-preview" src="" class="max-h-48 mx-auto rounded-lg shadow-lg object-cover">
-                                    <button type="button" onclick="event.stopPropagation(); app.clearImage()" class="mt-3 text-sm text-red-500 hover:text-red-600 font-medium">
+                                    <button type="button" id="remove-image-btn" class="mt-3 text-sm text-red-500 hover:text-red-600 font-medium">
                                         <i class="fas fa-trash mr-1"></i> Remove Image
                                     </button>
                                 </div>
@@ -463,8 +460,8 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Platform</label>
-                            <select id="form-category" onchange="app.updateSubcategories()" required
+                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Platform *</label>
+                            <select id="form-category" required
                                 class="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand-500 focus:outline-none appearance-none cursor-pointer">
                                 <option value="">Select Platform</option>
                                 <option value="WhatsApp">WhatsApp</option>
@@ -474,7 +471,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Category</label>
+                            <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Category *</label>
                             <select id="form-subcategory" disabled required
                                 class="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand-500 focus:outline-none appearance-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
                                 <option value="">Select Platform First</option>
@@ -486,7 +483,7 @@
                                 Description
                                 <span id="word-count" class="text-xs font-normal text-gray-500 ml-2">(0/60 words)</span>
                             </label>
-                            <textarea id="form-description" rows="4" oninput="app.checkWordCount(this)" 
+                            <textarea id="form-description" rows="4" 
                                 class="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand-500 focus:outline-none transition-all resize-none" 
                                 placeholder="Describe what makes your community special..."></textarea>
                             <p id="word-error" class="text-red-500 text-xs mt-2 hidden flex items-center gap-1">
@@ -496,9 +493,9 @@
                     </div>
 
                     <button type="submit" id="submit-btn" 
-                        class="w-full py-4 rounded-xl bg-gradient-to-r from-brand-600 to-purple-600 text-white font-bold text-lg shadow-lg hover:shadow-xl hover:shadow-brand-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex justify-center items-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed">
-                        <span>Submit Community</span>
-                        <i class="fas fa-paper-plane group-hover:translate-x-1 transition-transform"></i>
+                        class="w-full py-4 rounded-xl bg-gradient-to-r from-brand-600 to-purple-600 text-white font-bold text-lg shadow-lg hover:shadow-xl hover:shadow-brand-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all flex justify-center items-center gap-2 group">
+                        <span id="btn-text">Submit Community</span>
+                        <i id="btn-icon" class="fas fa-paper-plane group-hover:translate-x-1 transition-transform"></i>
                     </button>
                 </form>
             </div>
@@ -543,7 +540,8 @@
             increment, 
             serverTimestamp, 
             query, 
-            orderBy 
+            orderBy,
+            getDocs
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { 
             getStorage, 
@@ -553,21 +551,32 @@
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         // ==========================================
-        // FIREBASE CONFIGURATION
+        // FIREBASE CONFIGURATION - REPLACE WITH YOUR CONFIG
         // ==========================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyDbzYi1RUl-Q7T0WzONHzI_oqn-aqMKGV0",
-            authDomain: "link-wave.firebaseapp.com",
-            projectId: "link-wave",
-            storageBucket: "link-wave.firebasestorage.app",
-            messagingSenderId: "139905550622",
-            appId: "1:139905550622:web:a4bbef79fda9907eaca10f"
-        };
+const firebaseConfig = {
+  apiKey: "AIzaSyDbzYi1RUl-Q7T0WzONHzI_oqn-aqMKGV0",
+  authDomain: "link-wave.firebaseapp.com",
+  projectId: "link-wave",
+  storageBucket: "link-wave.firebasestorage.app",
+  messagingSenderId: "139905550622",
+  appId: "1:139905550622:web:a4bbef79fda9907eaca10f"
+};
 
-        // Initialize Firebase
-        const appFirebase = initializeApp(firebaseConfig);
-        const db = getFirestore(appFirebase);
-        const storage = getStorage(appFirebase);
+        // ==========================================
+        // GLOBAL ERROR HANDLING
+        // ==========================================
+        let db, storage, appFirebase;
+        let firebaseInitialized = false;
+
+        try {
+            appFirebase = initializeApp(firebaseConfig);
+            db = getFirestore(appFirebase);
+            storage = getStorage(appFirebase);
+            firebaseInitialized = true;
+            console.log('✅ Firebase initialized successfully');
+        } catch (error) {
+            console.error('❌ Firebase initialization error:', error);
+        }
 
         // ==========================================
         // DATA STRUCTURES
@@ -584,9 +593,7 @@
         const app = {
             currentView: 'home',
             links: [],
-            typingSpeed: 80,
-            deletingSpeed: 40,
-            pauseTime: 2000,
+            isSubmitting: false,
 
             // --- Navigation System ---
             navigate: (viewId) => {
@@ -597,16 +604,18 @@
                 
                 // Show target view with animation
                 const target = document.getElementById(`view-${viewId}`);
-                target.classList.remove('hidden');
+                if (target) {
+                    target.classList.remove('hidden');
+                }
                 
-                // Update URL hash for direct linking
+                // Update URL hash
                 window.location.hash = viewId;
                 
                 // Close mobile menu
                 const mobileMenu = document.getElementById('mobile-menu');
                 const menuBtn = document.getElementById('mobile-menu-btn');
-                mobileMenu.classList.remove('active');
-                menuBtn.classList.remove('menu-open');
+                if (mobileMenu) mobileMenu.classList.remove('active');
+                if (menuBtn) menuBtn.classList.remove('menu-open');
                 
                 app.currentView = viewId;
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -615,6 +624,8 @@
             // --- Toast Notification System ---
             showToast: (message, type = 'success') => {
                 const container = document.getElementById('toast-container');
+                if (!container) return;
+                
                 const toast = document.createElement('div');
                 
                 const icons = {
@@ -623,11 +634,17 @@
                     info: 'fa-info-circle text-brand-500'
                 };
                 
+                const titles = {
+                    success: 'Success!',
+                    error: 'Error!',
+                    info: 'Info'
+                };
+                
                 toast.className = `toast ${type}`;
                 toast.innerHTML = `
                     <i class="fas ${icons[type]} text-xl"></i>
                     <div class="flex-1">
-                        <p class="font-semibold text-sm">${type === 'success' ? 'Success!' : type === 'error' ? 'Error!' : 'Info'}</p>
+                        <p class="font-semibold text-sm">${titles[type]}</p>
                         <p class="text-sm text-gray-600 dark:text-gray-400">${message}</p>
                     </div>
                     <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
@@ -651,14 +668,20 @@
             initTypingAnimation: () => {
                 const line1 = document.getElementById('typing-line-1');
                 const line2 = document.getElementById('typing-line-2');
+                
+                if (!line1 || !line2) return;
+                
                 const text1 = "Find Your Next";
                 const text2 = "Digital Community";
                 
                 let currentLine = 1;
                 let charIndex = 0;
                 let isDeleting = false;
+                let isPaused = false;
 
                 const type = () => {
+                    if (isPaused) return;
+                    
                     const currentText = currentLine === 1 ? text1 : text2;
                     const element = currentLine === 1 ? line1 : line2;
                     
@@ -670,19 +693,22 @@
                         charIndex++;
                     }
 
-                    let typeSpeed = isDeleting ? app.deletingSpeed : app.typingSpeed;
+                    let typeSpeed = isDeleting ? 40 : 80;
 
                     if (!isDeleting && charIndex === currentText.length) {
                         if (currentLine === 1) {
-                            // Move to line 2
                             currentLine = 2;
                             charIndex = 0;
                             setTimeout(type, 300);
                             return;
                         } else {
-                            // Finished both lines, start deleting after pause
-                            typeSpeed = app.pauseTime;
-                            isDeleting = true;
+                            isPaused = true;
+                            setTimeout(() => {
+                                isDeleting = true;
+                                isPaused = false;
+                                type();
+                            }, 2000);
+                            return;
                         }
                     } else if (isDeleting && charIndex === 0) {
                         isDeleting = false;
@@ -693,15 +719,14 @@
                     setTimeout(type, typeSpeed);
                 };
 
-                // Start typing animation
                 setTimeout(type, 500);
-                
-                // Badge rotation
                 app.initBadgeRotation();
             },
 
             initBadgeRotation: () => {
                 const badge = document.getElementById('typing-badge');
+                if (!badge) return;
+                
                 const texts = [
                     "Connecting communities worldwide",
                     "10,000+ active users daily",
@@ -726,6 +751,9 @@
             updateSubcategories: () => {
                 const catSelect = document.getElementById('form-category');
                 const subSelect = document.getElementById('form-subcategory');
+                
+                if (!catSelect || !subSelect) return;
+                
                 const selectedCat = catSelect.value;
 
                 subSelect.innerHTML = '<option value="">Select Category</option>';
@@ -743,156 +771,234 @@
                 }
             },
 
-            handleImagePreview: (input) => {
-                if (input.files && input.files[0]) {
-                    const file = input.files[0];
-                    
-                    // Validate file size (5MB)
-                    if (file.size > 5 * 1024 * 1024) {
-                        app.showToast('Image size must be less than 5MB', 'error');
-                        input.value = '';
-                        return;
-                    }
-                    
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        document.getElementById('image-preview').src = e.target.result;
-                        document.getElementById('image-preview-container').classList.remove('hidden');
-                        document.getElementById('upload-placeholder').classList.add('hidden');
-                    };
-                    reader.readAsDataURL(file);
+            handleImagePreview: (file) => {
+                if (!file) return;
+                
+                // Validate file size (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    app.showToast('Image size must be less than 5MB', 'error');
+                    return false;
                 }
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const preview = document.getElementById('image-preview');
+                    const previewContainer = document.getElementById('image-preview-container');
+                    const placeholder = document.getElementById('upload-placeholder');
+                    
+                    if (preview) preview.src = e.target.result;
+                    if (previewContainer) previewContainer.classList.remove('hidden');
+                    if (placeholder) placeholder.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+                return true;
             },
 
             clearImage: () => {
-                document.getElementById('form-image').value = '';
-                document.getElementById('image-preview-container').classList.add('hidden');
-                document.getElementById('upload-placeholder').classList.remove('hidden');
+                const fileInput = document.getElementById('form-image');
+                const previewContainer = document.getElementById('image-preview-container');
+                const placeholder = document.getElementById('upload-placeholder');
+                
+                if (fileInput) fileInput.value = '';
+                if (previewContainer) previewContainer.classList.add('hidden');
+                if (placeholder) placeholder.classList.remove('hidden');
             },
 
             checkWordCount: (textarea) => {
+                if (!textarea) return;
+                
                 const text = textarea.value.trim();
                 const words = text ? text.split(/\s+/).filter(w => w.length > 0).length : 0;
                 const counter = document.getElementById('word-count');
                 const error = document.getElementById('word-error');
                 const btn = document.getElementById('submit-btn');
 
-                counter.textContent = `(${words}/60 words)`;
-                counter.className = words > 60 ? "text-xs font-normal text-red-500 ml-2" : "text-xs font-normal text-gray-500 ml-2";
-                
-                if (words > 60) {
-                    error.classList.remove('hidden');
-                    btn.disabled = true;
-                } else {
-                    error.classList.add('hidden');
-                    btn.disabled = false;
+                if (counter) {
+                    counter.textContent = `(${words}/60 words)`;
+                    counter.className = words > 60 ? "text-xs font-normal text-red-500 ml-2" : "text-xs font-normal text-gray-500 ml-2";
                 }
+                
+                if (error) {
+                    if (words > 60) {
+                        error.classList.remove('hidden');
+                        if (btn) btn.disabled = true;
+                    } else {
+                        error.classList.add('hidden');
+                        if (btn) btn.disabled = false;
+                    }
+                }
+                
+                return words <= 60;
             },
 
             // --- Firebase: Submit Link ---
             handleSubmit: async (e) => {
                 e.preventDefault();
-                const btn = document.getElementById('submit-btn');
-                const originalContent = btn.innerHTML;
                 
-                // Loading state
-                btn.disabled = true;
-                btn.innerHTML = `<div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div> Uploading...`;
+                if (app.isSubmitting) return;
+                
+                // Validate Firebase
+                if (!firebaseInitialized) {
+                    app.showToast('Firebase not configured. Please add your Firebase config.', 'error');
+                    return;
+                }
+
+                // Validate form
+                const title = document.getElementById('form-title')?.value.trim();
+                const url = document.getElementById('form-url')?.value.trim();
+                const category = document.getElementById('form-category')?.value;
+                const subcategory = document.getElementById('form-subcategory')?.value;
+                const description = document.getElementById('form-description')?.value.trim();
+                const fileInput = document.getElementById('form-image');
+                
+                if (!title || !url || !category || !subcategory) {
+                    app.showToast('Please fill in all required fields', 'error');
+                    return;
+                }
+
+                // Validate word count
+                const words = description ? description.split(/\s+/).filter(w => w.length > 0).length : 0;
+                if (words > 60) {
+                    app.showToast('Description must be 60 words or less', 'error');
+                    return;
+                }
+
+                // Set loading state
+                app.isSubmitting = true;
+                const btn = document.getElementById('submit-btn');
+                const btnText = document.getElementById('btn-text');
+                const btnIcon = document.getElementById('btn-icon');
+                
+                if (btn) btn.disabled = true;
+                if (btnText) btnText.textContent = 'Uploading...';
+                if (btnIcon) {
+                    btnIcon.className = '';
+                    btnIcon.innerHTML = '<div class="spinner"></div>';
+                }
 
                 try {
-                    const title = document.getElementById('form-title').value.trim();
-                    const url = document.getElementById('form-url').value.trim();
-                    const category = document.getElementById('form-category').value;
-                    const subcategory = document.getElementById('form-subcategory').value;
-                    const description = document.getElementById('form-description').value.trim();
-                    const fileInput = document.getElementById('form-image');
-                    
                     let imageUrl = "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?w=800&q=80";
 
                     // Upload image if provided
-                    if (fileInput.files.length > 0) {
+                    if (fileInput && fileInput.files.length > 0) {
                         const file = fileInput.files[0];
                         const fileName = `links/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
                         const storageRef = ref(storage, fileName);
                         
+                        console.log('Uploading image...');
                         const snapshot = await uploadBytes(storageRef, file);
                         imageUrl = await getDownloadURL(snapshot.ref);
+                        console.log('Image uploaded:', imageUrl);
                     }
 
                     // Save to Firestore
-                    await addDoc(collection(db, "links"), {
+                    console.log('Saving to Firestore...');
+                    const docRef = await addDoc(collection(db, "links"), {
                         title,
                         url,
                         category,
                         subcategory,
-                        description,
+                        description: description || '',
                         imageUrl,
                         likes: 0,
                         createdAt: serverTimestamp(),
                         updatedAt: serverTimestamp()
                     });
+                    
+                    console.log('Document written with ID:', docRef.id);
 
                     app.showToast('Link submitted successfully! 🎉');
                     
                     // Reset form
-                    document.getElementById('submit-form').reset();
+                    document.getElementById('submit-form')?.reset();
                     app.clearImage();
-                    document.getElementById('form-subcategory').disabled = true;
-                    document.getElementById('word-count').textContent = '(0/60 words)';
+                    app.updateSubcategories();
+                    app.checkWordCount(document.getElementById('form-description'));
                     
                     // Navigate to home after delay
                     setTimeout(() => app.navigate('home'), 1500);
 
                 } catch (error) {
                     console.error("Submit error:", error);
-                    app.showToast(error.message || 'Failed to submit link. Please try again.', 'error');
+                    let errorMsg = 'Failed to submit link. Please try again.';
+                    
+                    if (error.code === 'permission-denied') {
+                        errorMsg = 'Permission denied. Check your Firebase rules.';
+                    } else if (error.code === 'unauthenticated') {
+                        errorMsg = 'Authentication required.';
+                    } else if (error.message) {
+                        errorMsg = error.message;
+                    }
+                    
+                    app.showToast(errorMsg, 'error');
                 } finally {
-                    btn.innerHTML = originalContent;
-                    btn.disabled = false;
+                    app.isSubmitting = false;
+                    if (btn) btn.disabled = false;
+                    if (btnText) btnText.textContent = 'Submit Community';
+                    if (btnIcon) {
+                        btnIcon.innerHTML = '';
+                        btnIcon.className = 'fas fa-paper-plane group-hover:translate-x-1 transition-transform';
+                    }
                 }
             },
 
             // --- Firebase: Real-time Listener ---
             initRealtimeListener: () => {
-                const q = query(collection(db, "links"), orderBy("createdAt", "desc"));
-                
-                const unsubscribe = onSnapshot(q, (snapshot) => {
-                    app.links = [];
-                    snapshot.forEach((doc) => {
-                        app.links.push({ 
-                            id: doc.id, 
-                            ...doc.data(),
-                            createdAt: doc.data().createdAt?.toDate() || new Date()
-                        });
-                    });
-                    
-                    app.renderLinks(app.links);
-                }, (error) => {
-                    console.error("Firestore error:", error);
-                    if (firebaseConfig.apiKey.includes("YOUR")) {
-                        // Demo mode with dummy data
-                        app.renderLinks(app.getDummyData());
-                        app.showToast('Running in demo mode - configure Firebase to enable real-time features', 'info');
-                    } else {
-                        app.showToast('Error loading data. Please check your connection.', 'error');
-                    }
-                });
+                if (!firebaseInitialized) {
+                    console.warn('Firebase not initialized, using demo data');
+                    app.renderLinks(app.getDummyData());
+                    return;
+                }
 
-                // Store unsubscribe function for cleanup if needed
-                window.unsubscribeLinks = unsubscribe;
+                try {
+                    const q = query(collection(db, "links"), orderBy("createdAt", "desc"));
+                    
+                    const unsubscribe = onSnapshot(q, (snapshot) => {
+                        console.log('Received snapshot with', snapshot.docs.length, 'documents');
+                        app.links = [];
+                        snapshot.forEach((doc) => {
+                            const data = doc.data();
+                            app.links.push({ 
+                                id: doc.id, 
+                                ...data,
+                                createdAt: data.createdAt?.toDate() || new Date()
+                            });
+                        });
+                        
+                        app.renderLinks(app.links);
+                    }, (error) => {
+                        console.error("Firestore listener error:", error);
+                        app.showToast('Error loading data. Using offline mode.', 'error');
+                        app.renderLinks(app.getDummyData());
+                    });
+
+                    window.unsubscribeLinks = unsubscribe;
+                } catch (error) {
+                    console.error("Error setting up listener:", error);
+                    app.renderLinks(app.getDummyData());
+                }
             },
 
             // --- Firebase: Like Functionality ---
             handleLike: async (id, currentLikes, event) => {
-                event.stopPropagation();
+                if (event) event.stopPropagation();
                 
+                if (!firebaseInitialized) {
+                    app.showToast('Firebase not configured', 'error');
+                    return;
+                }
+
                 // Optimistic UI update
                 const likeElement = document.getElementById(`likes-${id}`);
-                const heartIcon = likeElement.previousElementSibling;
+                const heartIcon = likeElement?.previousElementSibling;
                 
-                likeElement.textContent = currentLikes + 1;
-                heartIcon.classList.add('text-red-500', 'scale-125');
-                heartIcon.classList.remove('text-gray-400');
+                if (likeElement) {
+                    likeElement.textContent = currentLikes + 1;
+                }
+                if (heartIcon) {
+                    heartIcon.classList.add('text-red-500', 'scale-125');
+                    heartIcon.classList.remove('text-gray-400');
+                }
                 
                 try {
                     const linkRef = doc(db, "links", id);
@@ -902,22 +1008,25 @@
                 } catch (error) {
                     console.error("Like error:", error);
                     // Revert on error
-                    likeElement.textContent = currentLikes;
-                    heartIcon.classList.remove('text-red-500', 'scale-125');
-                    heartIcon.classList.add('text-gray-400');
+                    if (likeElement) likeElement.textContent = currentLikes;
+                    if (heartIcon) {
+                        heartIcon.classList.remove('text-red-500', 'scale-125');
+                        heartIcon.classList.add('text-gray-400');
+                    }
                     app.showToast('Failed to update like', 'error');
                 }
                 
                 setTimeout(() => {
-                    heartIcon.classList.remove('scale-125');
+                    if (heartIcon) heartIcon.classList.remove('scale-125');
                 }, 200);
             },
 
             // --- Rendering ---
             renderLinks: (linksToRender) => {
                 const grid = document.getElementById('links-grid');
+                if (!grid) return;
                 
-                if (linksToRender.length === 0) {
+                if (!linksToRender || linksToRender.length === 0) {
                     grid.innerHTML = `
                         <div class="col-span-full text-center py-16">
                             <div class="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl text-gray-400">
@@ -934,11 +1043,10 @@
                 grid.innerHTML = linksToRender.map((link, index) => {
                     const delay = index * 100;
                     
-                    // Category styling
                     const categoryStyles = {
-                        'WhatsApp': { color: 'bg-green-500', icon: 'fa-whatsapp', bg: 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' },
-                        'Telegram': { color: 'bg-blue-500', icon: 'fa-telegram', bg: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' },
-                        'Facebook': { color: 'bg-blue-600', icon: 'fa-facebook-f', bg: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400' }
+                        'WhatsApp': { icon: 'fa-whatsapp', bg: 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' },
+                        'Telegram': { icon: 'fa-telegram', bg: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' },
+                        'Facebook': { icon: 'fa-facebook-f', bg: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400' }
                     };
                     
                     const style = categoryStyles[link.category] || categoryStyles['WhatsApp'];
@@ -947,7 +1055,7 @@
                     return `
                         <article class="link-card bg-white dark:bg-dark-card rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm animate-fade-in-up" style="animation-delay: ${delay}ms; animation-fill-mode: both;">
                             <div class="relative h-48 overflow-hidden group cursor-pointer" onclick="window.open('${link.url}', '_blank')">
-                                <img src="${link.imageUrl}" alt="${link.title}" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                                <img src="${link.imageUrl || 'https://via.placeholder.com/400x200'}" alt="${link.title}" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" onerror="this.src='https://via.placeholder.com/400x200'">
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                 
                                 <div class="absolute top-3 left-3">
@@ -969,9 +1077,9 @@
                                     <span class="text-xs font-bold text-brand-500 uppercase tracking-wider bg-brand-50 dark:bg-brand-900/20 px-2 py-1 rounded-md">
                                         ${link.subcategory || 'General'}
                                     </span>
-                                    <button onclick="app.handleLike('${link.id}', ${link.likes}, event)" class="flex items-center gap-1.5 text-gray-400 hover:text-red-500 transition-all group/like p-1 -mr-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">
+                                    <button onclick="app.handleLike('${link.id}', ${link.likes || 0}, event)" class="flex items-center gap-1.5 text-gray-400 hover:text-red-500 transition-all group/like p-1 -mr-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">
                                         <i class="fas fa-heart transition-transform ${isLiked ? 'text-red-500' : ''} group-hover/like:scale-110"></i>
-                                        <span id="likes-${link.id}" class="text-sm font-semibold tabular-nums">${link.likes}</span>
+                                        <span id="likes-${link.id}" class="text-sm font-semibold tabular-nums">${link.likes || 0}</span>
                                     </button>
                                 </div>
                                 
@@ -994,8 +1102,8 @@
             },
 
             filterLinks: () => {
-                const cat = document.getElementById('filter-category').value;
-                const search = document.getElementById('search-input').value.toLowerCase().trim();
+                const cat = document.getElementById('filter-category')?.value || 'all';
+                const search = document.getElementById('search-input')?.value.toLowerCase().trim() || '';
                 
                 let filtered = [...app.links];
                 
@@ -1005,9 +1113,9 @@
                 
                 if (search) {
                     filtered = filtered.filter(l => 
-                        l.title.toLowerCase().includes(search) || 
-                        l.description.toLowerCase().includes(search) ||
-                        l.subcategory?.toLowerCase().includes(search)
+                        (l.title && l.title.toLowerCase().includes(search)) || 
+                        (l.description && l.description.toLowerCase().includes(search)) ||
+                        (l.subcategory && l.subcategory.toLowerCase().includes(search))
                     );
                 }
                 
@@ -1017,6 +1125,8 @@
             renderCategories: () => {
                 const createTags = (id, list, platform) => {
                     const container = document.getElementById(id);
+                    if (!container) return;
+                    
                     const colors = {
                         'WhatsApp': 'hover:border-green-500 hover:text-green-500 hover:shadow-green-500/10',
                         'Telegram': 'hover:border-blue-500 hover:text-blue-500 hover:shadow-blue-500/10',
@@ -1040,8 +1150,8 @@
             filterByCategory: (platform, subcategory) => {
                 app.navigate('home');
                 setTimeout(() => {
-                    document.getElementById('filter-category').value = platform;
-                    // Could add subcategory filtering here
+                    const filter = document.getElementById('filter-category');
+                    if (filter) filter.value = platform;
                     app.filterLinks();
                 }, 100);
             },
@@ -1088,7 +1198,6 @@
                 const mobileThemeToggle = document.getElementById('theme-toggle-mobile');
                 const html = document.documentElement;
                 
-                // Check saved preference or system preference
                 const savedTheme = localStorage.getItem('theme');
                 const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 
@@ -1100,12 +1209,9 @@
                     html.classList.toggle('dark');
                     const isDark = html.classList.contains('dark');
                     localStorage.setItem('theme', isDark ? 'dark' : 'light');
-                    
-                    // Dispatch custom event for components that need to know
-                    window.dispatchEvent(new CustomEvent('themechange', { detail: { isDark } }));
                 };
 
-                themeToggle.addEventListener('click', toggleTheme);
+                if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
                 if (mobileThemeToggle) mobileThemeToggle.addEventListener('click', toggleTheme);
             },
 
@@ -1114,61 +1220,134 @@
                 const menuBtn = document.getElementById('mobile-menu-btn');
                 const mobileMenu = document.getElementById('mobile-menu');
                 
+                if (!menuBtn || !mobileMenu) return;
+                
                 menuBtn.addEventListener('click', () => {
                     menuBtn.classList.toggle('menu-open');
                     mobileMenu.classList.toggle('active');
                 });
             },
 
-            // --- Keyboard Shortcuts ---
-            initKeyboardShortcuts: () => {
+            // --- Event Listeners Setup ---
+            setupEventListeners: () => {
+                // Form submission
+                const form = document.getElementById('submit-form');
+                if (form) {
+                    form.addEventListener('submit', app.handleSubmit);
+                }
+
+                // Category change
+                const categorySelect = document.getElementById('form-category');
+                if (categorySelect) {
+                    categorySelect.addEventListener('change', app.updateSubcategories);
+                }
+
+                // Image upload
+                const imageInput = document.getElementById('form-image');
+                const dropZone = document.getElementById('drop-zone');
+                
+                if (imageInput && dropZone) {
+                    // Click to upload
+                    dropZone.addEventListener('click', (e) => {
+                        if (e.target.id !== 'remove-image-btn' && !e.target.closest('#remove-image-btn')) {
+                            imageInput.click();
+                        }
+                    });
+                    
+                    // File selection
+                    imageInput.addEventListener('change', (e) => {
+                        if (e.target.files.length > 0) {
+                            app.handleImagePreview(e.target.files[0]);
+                        }
+                    });
+                    
+                    // Drag and drop
+                    dropZone.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        dropZone.classList.add('border-brand-500', 'bg-brand-50/50');
+                    });
+                    
+                    dropZone.addEventListener('dragleave', () => {
+                        dropZone.classList.remove('border-brand-500', 'bg-brand-50/50');
+                    });
+                    
+                    dropZone.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        dropZone.classList.remove('border-brand-500', 'bg-brand-50/50');
+                        if (e.dataTransfer.files.length > 0) {
+                            imageInput.files = e.dataTransfer.files;
+                            app.handleImagePreview(e.dataTransfer.files[0]);
+                        }
+                    });
+                }
+
+                // Remove image button
+                const removeBtn = document.getElementById('remove-image-btn');
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        app.clearImage();
+                    });
+                }
+
+                // Word count
+                const descInput = document.getElementById('form-description');
+                if (descInput) {
+                    descInput.addEventListener('input', () => app.checkWordCount(descInput));
+                }
+
+                // Search
+                const searchInput = document.getElementById('search-input');
+                if (searchInput) {
+                    searchInput.addEventListener('input', app.filterLinks);
+                }
+
+                // Keyboard shortcuts
                 document.addEventListener('keydown', (e) => {
-                    // Ctrl/Cmd + K for search
                     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
                         e.preventDefault();
-                        document.getElementById('search-input').focus();
+                        const search = document.getElementById('search-input');
+                        if (search) search.focus();
                     }
                     
-                    // Escape to close mobile menu
                     if (e.key === 'Escape') {
                         const mobileMenu = document.getElementById('mobile-menu');
                         const menuBtn = document.getElementById('mobile-menu-btn');
-                        mobileMenu.classList.remove('active');
-                        menuBtn.classList.remove('menu-open');
+                        if (mobileMenu) mobileMenu.classList.remove('active');
+                        if (menuBtn) menuBtn.classList.remove('menu-open');
                     }
                 });
             }
         };
 
-        // Expose to window for HTML event handlers
+        // Expose to window
         window.app = app;
 
         // ==========================================
         // INITIALIZATION
         // ==========================================
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('🌊 Initializing Link Wave...');
+            
             // Initialize all systems
             app.initDarkMode();
             app.initMobileMenu();
-            app.initKeyboardShortcuts();
+            app.setupEventListeners();
             app.initTypingAnimation();
             app.initRealtimeListener();
             app.renderCategories();
+            app.updateSubcategories();
 
-            // Form handler
-            document.getElementById('submit-form').addEventListener('submit', app.handleSubmit);
-            
-            // Search handler
-            document.getElementById('search-input').addEventListener('input', app.filterLinks);
-            
             // Check for hash in URL
             const hash = window.location.hash.replace('#', '');
             if (hash && ['home', 'categories', 'submit'].includes(hash)) {
                 app.navigate(hash);
+            } else {
+                app.navigate('home');
             }
             
-            console.log('🌊 Link Wave initialized successfully');
+            console.log('✅ Link Wave initialized successfully');
         });
     </script>
 </body>
-    </html>
+                        </html>

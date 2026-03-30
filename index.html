@@ -231,226 +231,7 @@
         .subcategory-container.active {
             display: block;
         }
-
-        /* Advanced Animations */
-        .fade-in {
-            animation: fadeIn 0.8s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .slide-in-left {
-            animation: slideInLeft 0.6s ease-out;
-        }
-
-        @keyframes slideInLeft {
-            from { transform: translateX(-100px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .slide-in-right {
-            animation: slideInRight 0.6s ease-out;
-        }
-
-        @keyframes slideInRight {
-            from { transform: translateX(100px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .bounce-in {
-            animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        }
-
-        @keyframes bounceIn {
-            0% { transform: scale(0.3); opacity: 0; }
-            50% { transform: scale(1.05); }
-            70% { transform: scale(0.9); }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .float {
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .glow {
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from { box-shadow: 0 0 5px #dc2626, 0 0 10px #dc2626, 0 0 15px #dc2626; }
-            to { box-shadow: 0 0 10px #dc2626, 0 0 20px #dc2626, 0 0 30px #dc2626; }
-        }
-
-        .shake:hover {
-            animation: shake 0.5s;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
-        }
-
-        .rotate-on-hover:hover {
-            animation: rotate 0.6s ease-in-out;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .pulse-scale {
-            animation: pulseScale 2s infinite;
-        }
-
-        @keyframes pulseScale {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .gradient-text {
-            background: linear-gradient(45deg, #dc2626, #ff6b6b, #dc2626);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradientShift 3s ease infinite;
-        }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .ripple {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .ripple::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
-            background-repeat: no-repeat;
-            background-position: 50%;
-            transform: scale(10, 10);
-            opacity: 0;
-            transition: transform .5s, opacity 1s;
-        }
-
-        .ripple:active::after {
-            transform: scale(0, 0);
-            opacity: 0.3;
-            transition: 0s;
-        }
-
-        .hover-lift {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .hover-lift:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(220, 38, 38, 0.3);
-        }
-
-        .neon-border {
-            animation: neonBorder 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes neonBorder {
-            from { border-color: #dc2626; box-shadow: 0 0 5px #dc2626; }
-            to { border-color: #ff6b6b; box-shadow: 0 0 20px #ff6b6b, 0 0 40px #dc2626; }
-        }
-
-        .stagger-animation > * {
-            opacity: 0;
-            animation: staggerFadeIn 0.5s ease forwards;
-        }
-
-        .stagger-animation > *:nth-child(1) { animation-delay: 0.1s; }
-        .stagger-animation > *:nth-child(2) { animation-delay: 0.2s; }
-        .stagger-animation > *:nth-child(3) { animation-delay: 0.3s; }
-        .stagger-animation > *:nth-child(4) { animation-delay: 0.4s; }
-        .stagger-animation > *:nth-child(5) { animation-delay: 0.5s; }
-        .stagger-animation > *:nth-child(6) { animation-delay: 0.6s; }
-
-        @keyframes staggerFadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .morphing-bg {
-            animation: morphing 15s ease-in-out infinite;
-        }
-
-        @keyframes morphing {
-            0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
-            50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
-        }
-
-        .text-shimmer {
-            background: linear-gradient(90deg, #ffffff 0%, #dc2626 50%, #ffffff 100%);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: shimmer 3s linear infinite;
-        }
-
-        @keyframes shimmer {
-            to { background-position: 200% center; }
-        }
-
-        .parallax-bg {
-            transform-style: preserve-3d;
-            perspective: 1000px;
-        }
-
-        .tilt-card {
-            transition: transform 0.1s ease;
-            transform-style: preserve-3d;
-        }
-
-        .magnetic-btn {
-            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        .scroll-reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s ease;
-        }
-
-        .scroll-reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .loading-skeleton {
-            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
-            background-size: 200% 100%;
-            animation: skeleton 1.5s infinite;
-        }
-
-        @keyframes skeleton {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
     </style>
-<base target="_blank">
 <base target="_blank">
 </head>
 <body class="pb-20">
@@ -737,6 +518,7 @@
                             <option value="Finance">Finance</option>
                             <option value="Lifestyle">Lifestyle</option>
                             <option value="Sports">Sports</option>
+                            <option value="18+" style="color: #dc2626; font-weight: bold;">🔞 18+ (Adult)</option>
                         </select>
                     </div>
                     <div>
@@ -792,10 +574,10 @@
                     </div>
                 </div>
                 
-                <div class="hidden md:flex items-center space-x-6 stagger-animation">
-                    <a href="#categories" class="text-sm text-gray-300 hover:text-white transition hover-lift magnetic-btn">Categories</a>
-                    <button onclick="openTosModal()" class="text-sm text-gray-300 hover:text-white transition hover-lift magnetic-btn">Terms of Service</button>
-                    <button onclick="openSubmitModal()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center transition ripple glow pulse-scale">
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#categories" class="text-sm text-gray-300 hover:text-white transition">Categories</a>
+                    <button onclick="openTosModal()" class="text-sm text-gray-300 hover:text-white transition">Terms of Service</button>
+                    <button onclick="openSubmitModal()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center transition">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
@@ -806,17 +588,10 @@
         </div>
     </nav>
 
-    <!-- Hero Section with Advanced Animations -->
-    <section id="home" class="hero-bg relative py-20 px-4 overflow-hidden">
-        <!-- Animated Background Elements -->
-        <div class="absolute inset-0 overflow-hidden pointer-events-none">
-            <div class="absolute top-20 left-10 w-72 h-72 bg-red-600/10 rounded-full blur-3xl float"></div>
-            <div class="absolute bottom-20 right-10 w-96 h-96 bg-red-900/10 rounded-full blur-3xl float" style="animation-delay: 1.5s;"></div>
-            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-red-600/5 to-transparent rounded-full blur-3xl morphing-bg"></div>
-        </div>
-
+    <!-- Hero Section with Typing Animation -->
+    <section id="home" class="hero-bg relative py-20 px-4">
         <div class="max-w-4xl mx-auto text-center relative z-10">
-            <h2 class="text-5xl md:text-6xl font-bold mb-6 gradient-text bounce-in">
+            <h2 class="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-red-400 to-red-600">
                 Link Wave
             </h2>
             <div class="h-8 mb-8">
@@ -861,47 +636,46 @@
         </div>
     </section>
 
-    <!-- Category Filter Section with Stagger Animation -->
-    <section id="categories" class="max-w-7xl mx-auto px-4 mt-8 mb-12 scroll-reveal">
-        <h3 class="text-center text-gray-400 mb-6 text-sm uppercase tracking-wider">Browse by Category</h3>
-        <div class="flex flex-wrap justify-center gap-3 stagger-animation" id="categoryFilters">
-            <button onclick="filterByCategory('all')" class="category-btn active px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all hover-lift magnetic-btn ripple">
-                🌐 All
+    <!-- Category Filter Section -->
+    <section id="categories" class="max-w-7xl mx-auto px-4 mt-8 mb-12">
+        <div class="flex flex-wrap justify-center gap-3" id="categoryFilters">
+            <button onclick="filterByCategory('all')" class="category-btn active px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all">
+                All
             </button>
-            <button onclick="filterByCategory('Movie')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all hover-lift magnetic-btn ripple">
-                🎬 Movie
+            <button onclick="filterByCategory('Movie')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all">
+                Movie
             </button>
-            <button onclick="filterByCategory('Education')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all hover-lift magnetic-btn ripple">
-                📚 Education
+            <button onclick="filterByCategory('Education')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all">
+                Education
             </button>
-            <button onclick="filterByCategory('Jobs')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all hover-lift magnetic-btn ripple">
-                💼 Jobs
+            <button onclick="filterByCategory('Jobs')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all">
+                Jobs
             </button>
-            <button onclick="filterByCategory('Funny')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all hover-lift magnetic-btn ripple">
-                😂 Funny
+            <button onclick="filterByCategory('Funny')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all">
+                Funny
             </button>
-            <button onclick="filterByCategory('News')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all hover-lift magnetic-btn ripple">
-                📰 News
+            <button onclick="filterByCategory('News')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all">
+                News
             </button>
-            <button onclick="filterByCategory('Business')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all hover-lift magnetic-btn ripple">
-                🏢 Business
+            <button onclick="filterByCategory('Business')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all">
+                Business
             </button>
-            <button onclick="filterByCategory('Tech')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all hover-lift magnetic-btn ripple">
-                💻 Tech
+            <button onclick="filterByCategory('Tech')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all">
+                Tech
             </button>
-            <button onclick="filterByCategory('Gaming')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all hover-lift magnetic-btn ripple">
-                🎮 Gaming
+            <button onclick="filterByCategory('Gaming')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all">
+                Gaming
             </button>
-            <button onclick="filterByCategory('Crypto')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all hover-lift magnetic-btn ripple">
-                ₿ Crypto
+            <button onclick="filterByCategory('Crypto')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all">
+                Crypto
             </button>
-            <button onclick="filterByCategory('Sports')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all hover-lift magnetic-btn ripple">
-                ⚽ Sports
+            <button onclick="filterByCategory('Sports')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all">
+                Sports
             </button>
-            <button onclick="filterByCategory('Music')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all hover-lift magnetic-btn ripple">
-                🎵 Music
+            <button onclick="filterByCategory('Music')" class="category-btn px-4 py-2 rounded-full border border-gray-700 text-sm font-medium text-gray-300 hover:border-red-500 transition-all">
+                Music
             </button>
-            <button onclick="filterByCategory('18+')" class="category-btn px-4 py-2 rounded-full border border-red-900 text-sm font-medium text-red-400 hover:border-red-500 hover:bg-red-900/20 transition-all hover-lift magnetic-btn ripple neon-border">
+            <button onclick="filterByCategory('18+')" class="category-btn px-4 py-2 rounded-full border border-red-900 text-sm font-medium text-red-400 hover:border-red-500 hover:bg-red-900/20 transition-all">
                 🔞 18+
             </button>
         </div>
@@ -909,8 +683,8 @@
 
     <!-- Communities List Section -->
     <main class="max-w-7xl mx-auto px-4 mt-10">
-        <div class="mt-8 scroll-reveal">
-            <h3 class="text-xl font-bold mb-6 flex items-center border-b border-gray-800 pb-4 slide-in-left">
+        <div class="mt-8">
+            <h3 class="text-xl font-bold mb-6 flex items-center border-b border-gray-800 pb-4">
                 <span class="bg-red-500/20 text-red-400 p-2 rounded-lg mr-3">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                 </span>
@@ -1030,7 +804,8 @@
             'Technology': ['Programming', 'AI/Machine Learning', 'Cybersecurity', 'Tech News', 'Gadgets'],
             'Finance': ['Crypto', 'Stock Market', 'Personal Finance', 'Investing', 'Banking'],
             'Lifestyle': ['Health & Fitness', 'Travel', 'Food', 'Fashion', 'Relationships'],
-            'Sports': ['Football', 'Basketball', 'Cricket', 'eSports', 'General Sports']
+            'Sports': ['Football', 'Basketball', 'Cricket', 'eSports', 'General Sports'],
+            '18+': ['Adult Content', 'Dating', 'Mature Gaming', 'Private Groups', 'NSFW']
         };
 
         // Update subcategories based on category selection
@@ -1416,80 +1191,6 @@
                 }
             });
         });
-
-        // Scroll Reveal Animation Observer
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('active');
-                    // Add bounce effect when revealed
-                    entry.target.style.animation = 'bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-                }
-            });
-        }, observerOptions);
-
-        // Observe all scroll-reveal elements
-        document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
-
-        // Magnetic button effect
-        document.querySelectorAll('.magnetic-btn').forEach(btn => {
-            btn.addEventListener('mousemove', (e) => {
-                const rect = btn.getBoundingClientRect();
-                const x = e.clientX - rect.left - rect.width / 2;
-                const y = e.clientY - rect.top - rect.height / 2;
-                btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
-            });
-
-            btn.addEventListener('mouseleave', () => {
-                btn.style.transform = 'translate(0, 0)';
-            });
-        });
-
-        // Parallax effect on scroll
-        window.addEventListener('scroll', () => {
-            const scrolled = window.pageYOffset;
-            const parallaxElements = document.querySelectorAll('.float');
-            parallaxElements.forEach((el, index) => {
-                const speed = 0.5 + (index * 0.1);
-                el.style.transform = `translateY(${scrolled * speed}px)`;
-            });
-        });
-
-        // Counter animation
-        function animateCounter(element, target, duration = 2000) {
-            let start = 0;
-            const increment = target / (duration / 16);
-            const timer = setInterval(() => {
-                start += increment;
-                if (start >= target) {
-                    element.textContent = target;
-                    clearInterval(timer);
-                } else {
-                    element.textContent = Math.floor(start);
-                }
-            }, 16);
-        }
-
-        // Animate counters when visible
-        const counterObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const counters = entry.target.querySelectorAll('#heroCounter, #sidebarCounter');
-                    counters.forEach(counter => {
-                        const target = parseInt(counter.textContent);
-                        animateCounter(counter, target);
-                    });
-                    counterObserver.unobserve(entry.target);
-                }
-            });
-        });
-
-        document.querySelectorAll('.counter-box').forEach(box => counterObserver.observe(box));
     </script>
 
     <!-- Developer Modal Overlay -->
@@ -1592,4 +1293,4 @@
     </div>
 
 </body>
-                                                                                                        </html>
+                        </html>

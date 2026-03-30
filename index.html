@@ -1,4 +1,11 @@
-<!DOCTYPE html>
+
+# Create the modified HTML with:
+# 1. Remove Terms of Service from home page (keep in footer only)
+# 2. Add Terms of Service popup/modal when clicking menu
+# 3. Add Category and Sub-category dropdown in submit form
+# 4. Keep red and black theme
+
+html_content = '''<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -200,9 +207,36 @@
             transform: scale(1) translateY(0);
         }
 
-        /* Terms of Service */
-        .tos-section {
-            background: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(10, 10, 10, 0.9) 100%);
+        /* Terms of Service Modal */
+        .tos-modal {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .tos-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .tos-modal-content {
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s ease;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .tos-modal.active .tos-modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        /* Subcategory visibility */
+        .subcategory-container {
+            display: none;
+        }
+
+        .subcategory-container.active {
+            display: block;
         }
     </style>
 </head>
@@ -210,6 +244,83 @@
 
     <!-- Sidebar Overlay -->
     <div id="sidebarOverlay" class="sidebar-overlay fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onclick="closeSidebar()"></div>
+
+    <!-- Terms of Service Modal Overlay -->
+    <div id="tosModal" class="tos-modal fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="closeTosModal(event)">
+        <div class="tos-modal-content bg-card rounded-2xl p-6 sm:p-10 shadow-2xl border border-gray-800/50 w-full max-w-3xl relative" onclick="event.stopPropagation()">
+            <!-- Close Button -->
+            <button onclick="closeTosModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold mb-2">Terms of Service</h2>
+                <p class="text-gray-400">Please read these terms carefully before using our platform</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6 text-sm text-gray-300 mb-6">
+                <div class="space-y-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="bg-red-500/20 p-2 rounded-lg mt-1">
+                            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-white mb-1">Community Guidelines</h4>
+                            <p class="text-gray-400">All submitted links must lead to legitimate communities. No spam, illegal content, or malicious links allowed.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start space-x-3">
+                        <div class="bg-red-500/20 p-2 rounded-lg mt-1">
+                            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-white mb-1">Privacy & Security</h4>
+                            <p class="text-gray-400">We respect your privacy. Uploaded images are stored securely and used only for community previews.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="bg-red-500/20 p-2 rounded-lg mt-1">
+                            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-white mb-1">Content Moderation</h4>
+                            <p class="text-gray-400">We reserve the right to remove any community that violates our terms without prior notice.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start space-x-3">
+                        <div class="bg-red-500/20 p-2 rounded-lg mt-1">
+                            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-white mb-1">Liability</h4>
+                            <p class="text-gray-400">Link Wave is not responsible for the content within third-party communities. Use at your own discretion.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-gray-700 text-center">
+                <p class="text-gray-500 text-xs">
+                    © 2026 Link Wave. All rights reserved. | By using this platform, you agree to our Terms of Service.
+                </p>
+            </div>
+        </div>
+    </div>
 
     <!-- Left Sidebar -->
     <div id="sidebar" class="sidebar fixed left-0 top-0 h-full w-72 bg-[#1a1a1a] border-r border-gray-800 z-50 shadow-2xl">
@@ -243,12 +354,12 @@
                     </svg>
                     <span>Submit Link</span>
                 </button>
-                <a href="#tos" onclick="closeSidebar()" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-red-600/20 hover:text-red-400 transition-all group">
+                <button onclick="openTosModal(); closeSidebar();" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-red-600/20 hover:text-red-400 transition-all group text-left">
                     <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                     <span>Terms of Service</span>
-                </a>
+                </button>
             </nav>
 
             <div class="mt-8 pt-8 border-t border-gray-800">
@@ -324,33 +435,37 @@
                     </div>
                 </div>
 
-                <!-- Platform & Category -->
+                <!-- Platform -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Platform <span class="text-red-500">*</span></label>
+                    <select id="platform" required class="input-field w-full rounded-lg px-4 py-3 text-sm appearance-none cursor-pointer">
+                        <option value="" disabled selected>Select Platform</option>
+                        <option value="WhatsApp">WhatsApp</option>
+                        <option value="Telegram">Telegram</option>
+                        <option value="Facebook">Facebook</option>
+                        <option value="Discord">Discord</option>
+                    </select>
+                </div>
+
+                <!-- Category & Sub-Category -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Platform <span class="text-red-500">*</span></label>
-                        <select id="platform" required class="input-field w-full rounded-lg px-4 py-3 text-sm appearance-none cursor-pointer">
-                            <option value="" disabled selected>Select Platform</option>
-                            <option value="WhatsApp">WhatsApp</option>
-                            <option value="Telegram">Telegram</option>
-                            <option value="Facebook">Facebook</option>
-                            <option value="Discord">Discord</option>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Category <span class="text-red-500">*</span></label>
+                        <select id="category" required class="input-field w-full rounded-lg px-4 py-3 text-sm appearance-none cursor-pointer" onchange="updateSubcategories()">
+                            <option value="" disabled selected>Select Category</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Education">Education</option>
+                            <option value="Career">Career</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Lifestyle">Lifestyle</option>
+                            <option value="Sports">Sports</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Category <span class="text-red-500">*</span></label>
-                        <select id="category" required class="input-field w-full rounded-lg px-4 py-3 text-sm appearance-none cursor-pointer">
-                            <option value="" disabled selected>Select Category</option>
-                            <option value="Movie">Movie</option>
-                            <option value="Education">Education</option>
-                            <option value="Jobs">Jobs</option>
-                            <option value="Funny">Funny</option>
-                            <option value="News">News</option>
-                            <option value="Business">Business</option>
-                            <option value="Tech">Tech</option>
-                            <option value="Gaming">Gaming</option>
-                            <option value="Crypto">Crypto</option>
-                            <option value="Sports">Sports</option>
-                            <option value="Music">Music</option>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Sub-Category <span class="text-red-500">*</span></label>
+                        <select id="subcategory" required class="input-field w-full rounded-lg px-4 py-3 text-sm appearance-none cursor-pointer">
+                            <option value="" disabled selected>Select Sub-Category</option>
                         </select>
                     </div>
                 </div>
@@ -402,7 +517,7 @@
                 
                 <div class="hidden md:flex items-center space-x-6">
                     <a href="#categories" class="text-sm text-gray-300 hover:text-white transition">Categories</a>
-                    <a href="#tos" class="text-sm text-gray-300 hover:text-white transition">Terms of Service</a>
+                    <button onclick="openTosModal()" class="text-sm text-gray-300 hover:text-white transition">Terms of Service</button>
                     <button onclick="openSubmitModal()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center transition">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -520,74 +635,13 @@
         </div>
     </main>
 
-    <!-- Terms of Service Footer -->
-    <footer id="tos" class="mt-20 border-t border-gray-800">
-        <div class="tos-section py-12 px-4">
-            <div class="max-w-4xl mx-auto">
-                <div class="text-center mb-8">
-                    <h3 class="text-2xl font-bold mb-2">Terms of Service</h3>
-                    <p class="text-gray-400 text-sm">Please read these terms carefully before using our platform</p>
-                </div>
-
-                <div class="grid md:grid-cols-2 gap-8 text-sm text-gray-300">
-                    <div class="space-y-4">
-                        <div class="flex items-start space-x-3">
-                            <div class="bg-red-500/20 p-2 rounded-lg mt-1">
-                                <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-white mb-1">Community Guidelines</h4>
-                                <p class="text-gray-400">All submitted links must lead to legitimate communities. No spam, illegal content, or malicious links allowed.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start space-x-3">
-                            <div class="bg-red-500/20 p-2 rounded-lg mt-1">
-                                <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-white mb-1">Privacy & Security</h4>
-                                <p class="text-gray-400">We respect your privacy. Uploaded images are stored securely and used only for community previews.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="space-y-4">
-                        <div class="flex items-start space-x-3">
-                            <div class="bg-red-500/20 p-2 rounded-lg mt-1">
-                                <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-white mb-1">Content Moderation</h4>
-                                <p class="text-gray-400">We reserve the right to remove any community that violates our terms without prior notice.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start space-x-3">
-                            <div class="bg-red-500/20 p-2 rounded-lg mt-1">
-                                <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-white mb-1">Liability</h4>
-                                <p class="text-gray-400">Link Wave is not responsible for the content within third-party communities. Use at your own discretion.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-8 pt-8 border-t border-gray-700 text-center">
-                    <p class="text-gray-500 text-xs">
-                        © 2026 Link Wave. All rights reserved. | By using this platform, you agree to our Terms of Service.
-                    </p>
-                </div>
+    <!-- Simple Footer -->
+    <footer class="mt-20 border-t border-gray-800">
+        <div class="bg-[#1a1a1a] py-8 px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <p class="text-gray-500 text-xs">
+                    © 2026 Link Wave. All rights reserved.
+                </p>
             </div>
         </div>
     </footer>
@@ -645,10 +699,39 @@
         const heroCounter = document.getElementById('heroCounter');
         const sidebarCounter = document.getElementById('sidebarCounter');
         const submitModal = document.getElementById('submitModal');
+        const tosModal = document.getElementById('tosModal');
+        const categorySelect = document.getElementById('category');
+        const subcategorySelect = document.getElementById('subcategory');
 
         let selectedFile = null;
         let allCommunities = [];
         let currentFilter = 'all';
+
+        // Subcategory data
+        const subcategories = {
+            'Entertainment': ['Movies', 'TV Shows', 'Music', 'Gaming', 'Funny/Memes'],
+            'Education': ['School', 'University', 'Language Learning', 'Online Courses', 'Tutoring'],
+            'Career': ['Jobs', 'Freelancing', 'Business', 'Networking', 'Internships'],
+            'Technology': ['Programming', 'AI/Machine Learning', 'Cybersecurity', 'Tech News', 'Gadgets'],
+            'Finance': ['Crypto', 'Stock Market', 'Personal Finance', 'Investing', 'Banking'],
+            'Lifestyle': ['Health & Fitness', 'Travel', 'Food', 'Fashion', 'Relationships'],
+            'Sports': ['Football', 'Basketball', 'Cricket', 'eSports', 'General Sports']
+        };
+
+        // Update subcategories based on category selection
+        window.updateSubcategories = function() {
+            const category = categorySelect.value;
+            subcategorySelect.innerHTML = '<option value="" disabled selected>Select Sub-Category</option>';
+            
+            if (subcategories[category]) {
+                subcategories[category].forEach(sub => {
+                    const option = document.createElement('option');
+                    option.value = sub;
+                    option.textContent = sub;
+                    subcategorySelect.appendChild(option);
+                });
+            }
+        };
 
         // Typing Animation
         const textToType = "Connect • Share • Grow";
@@ -686,6 +769,19 @@
         window.closeSubmitModal = function(event) {
             if (!event || event.target === submitModal || event.type === 'click') {
                 submitModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        };
+
+        // Terms of Service Modal Functions
+        window.openTosModal = function() {
+            tosModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeTosModal = function(event) {
+            if (!event || event.target === tosModal || event.type === 'click') {
+                tosModal.classList.remove('active');
                 document.body.style.overflow = '';
             }
         };
@@ -778,6 +874,7 @@
             const url = document.getElementById('url').value;
             const platform = document.getElementById('platform').value;
             const category = document.getElementById('category').value;
+            const subcategory = document.getElementById('subcategory').value;
             const description = document.getElementById('description').value;
 
             btnText.innerHTML = '<span class="loader"></span> Uploading...';
@@ -808,6 +905,7 @@
                     url: url,
                     platform: platform,
                     category: category,
+                    subcategory: subcategory,
                     description: description,
                     imageUrl: imageUrl,
                     timestamp: Date.now()
@@ -871,7 +969,7 @@
             const searchTerm = searchInput.value.toLowerCase();
             
             let filtered = allCommunities.filter(item => {
-                const matchesCategory = currentFilter === 'all' || item.category === currentFilter;
+                const matchesCategory = currentFilter === 'all' || item.category === currentFilter || item.subcategory === currentFilter;
                 const matchesSearch = item.title.toLowerCase().includes(searchTerm) || 
                                     item.description.toLowerCase().includes(searchTerm);
                 return matchesCategory && matchesSearch;
@@ -901,6 +999,7 @@
                         </div>
                         <div class="p-5 flex-1 flex flex-col">
                             <h4 class="text-lg font-bold text-white mb-1 truncate">${item.title}</h4>
+                            <p class="text-xs text-red-400 mb-2">${item.subcategory || 'General'}</p>
                             <p class="text-sm text-gray-400 line-clamp-2 mb-4 flex-1">${item.description || 'No description provided.'}</p>
                             <a href="${item.url}" target="_blank" class="block text-center w-full bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/20 py-2 rounded-lg text-sm font-semibold transition-colors">
                                 Join Community
@@ -965,4 +1064,24 @@
         });
     </script>
 </body>
-</html>
+</html>'''
+
+# Save the modified HTML
+with open('/mnt/kimi/output/link_wave_updated.html', 'w') as f:
+    f.write(html_content)
+
+print("✅ Modified HTML saved successfully!")
+print("\n📝 Changes made:")
+print("1. ✅ Removed Terms of Service from home page (footer removed)")
+print("2. ✅ Added Terms of Service POPUP modal when clicking menu")
+print("3. ✅ Added Category dropdown with 7 main categories:")
+print("   - Entertainment")
+print("   - Education")
+print("   - Career")
+print("   - Technology")
+print("   - Finance")
+print("   - Lifestyle")
+print("   - Sports")
+print("4. ✅ Added dynamic Sub-Category dropdown (changes based on Category)")
+print("5. ✅ Kept red and black theme")
+print("\n📂 File saved to: /mnt/kimi/output/link_wave_updated.html")

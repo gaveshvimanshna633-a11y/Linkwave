@@ -1,11 +1,4 @@
-
-# Create the modified HTML with:
-# 1. Remove Terms of Service from home page (keep in footer only)
-# 2. Add Terms of Service popup/modal when clicking menu
-# 3. Add Category and Sub-category dropdown in submit form
-# 4. Keep red and black theme
-
-html_content = '''<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1064,24 +1057,4 @@ html_content = '''<!DOCTYPE html>
         });
     </script>
 </body>
-</html>'''
-
-# Save the modified HTML
-with open('/mnt/kimi/output/link_wave_updated.html', 'w') as f:
-    f.write(html_content)
-
-print("✅ Modified HTML saved successfully!")
-print("\n📝 Changes made:")
-print("1. ✅ Removed Terms of Service from home page (footer removed)")
-print("2. ✅ Added Terms of Service POPUP modal when clicking menu")
-print("3. ✅ Added Category dropdown with 7 main categories:")
-print("   - Entertainment")
-print("   - Education")
-print("   - Career")
-print("   - Technology")
-print("   - Finance")
-print("   - Lifestyle")
-print("   - Sports")
-print("4. ✅ Added dynamic Sub-Category dropdown (changes based on Category)")
-print("5. ✅ Kept red and black theme")
-print("\n📂 File saved to: /mnt/kimi/output/link_wave_updated.html")
+</html>

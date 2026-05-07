@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Komi Can't Communicate</title>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131c;
+    --card: #1a1a27;
+    --border: rgba(255,255,255,0.07);
+    --accent: #e8a0bf;
+    --accent2: #c084fc;
+    --accent3: #67e8f9;
+    --text: #f0eef8;
+    --muted: #8b8aa0;
+    --score: #fbbf24;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-end;
+    padding: 0 0 60px;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 65% 30%, rgba(192,132,252,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 30% 70%, rgba(232,160,191,0.12) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 50% at 80% 80%, rgba(103,232,249,0.08) 0%, transparent 50%),
+      var(--bg);
+  }
+
+  /* animated floating orbs */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.25;
+    animation: floatOrb 8s ease-in-out infinite;
+  }
+  .orb1 { width: 340px; height: 340px; background: var(--accent2); top: -80px; right: 10%; animation-delay: 0s; }
+  .orb2 { width: 220px; height: 220px; background: var(--accent); bottom: 10%; left: 5%; animation-delay: -3s; }
+  .orb3 { width: 160px; height: 160px; background: var(--accent3); top: 40%; right: 25%; animation-delay: -5s; }
+
+  @keyframes floatOrb {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+  }
+
+  /* noise overlay */
+  .hero-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 50px;
+    align-items: flex-end;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 40px;
+    width: 100%;
+    animation: fadeUp 0.9s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .cover-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .cover-frame {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(192,132,252,0.3),
+      0 30px 80px rgba(0,0,0,0.7),
+      0 0 60px rgba(192,132,252,0.15);
+    aspect-ratio: 3/4.2;
+  }
+
+  .cover-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s ease;
+  }
+
+  .cover-frame:hover img { transform: scale(1.04); }
+
+  /* decorative corner lines */
+  .cover-frame::before, .cover-frame::after {
+    content: '';
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    z-index: 3;
+  }
+  .cover-frame::before {
+    top: -1px; left: -1px;
+    border-top: 2px solid var(--accent);
+    border-left: 2px solid var(--accent);
+    border-radius: 16px 0 0 0;
+  }
+  .cover-frame::after {
+    bottom: -1px; right: -1px;
+    border-bottom: 2px solid var(--accent2);
+    border-right: 2px solid var(--accent2);
+    border-radius: 0 0 16px 0;
+  }
+
+  .score-badge {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    background: var(--score);
+    color: #1a1000;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: 30px;
+    box-shadow: 0 4px 20px rgba(251,191,36,0.4);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 4;
+  }
+
+  .score-badge svg { width: 14px; height: 14px; }
+
+  .hero-info { padding-bottom: 4px; }
+
+  .year-tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(232,160,191,0.3);
+    padding: 4px 14px;
+    border-radius: 30px;
+    margin-bottom: 18px;
+    background: rgba(232,160,191,0.06);
+    animation: fadeUp 0.9s 0.1s ease both;
+  }
+
+  .hero-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    animation: fadeUp 0.9s 0.15s ease both;
+    background: linear-gradient(135deg, #f0eef8 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-title-jp {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 28px;
+    letter-spacing: 0.05em;
+    animation: fadeUp 0.9s 0.2s ease both;
+  }
+
+  .tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.9s 0.25s ease both;
+  }
+
+  .tag {
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    padding: 5px 14px;
+    border-radius: 30px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: var(--card);
+    transition: all 0.25s;
+    cursor: default;
+  }
+
+  .tag:hover {
+    border-color: rgba(192,132,252,0.4);
+    color: var(--accent2);
+    background: rgba(192,132,252,0.08);
+  }
+
+  .meta-row {
+    display: flex;
+    gap: 28px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.9s 0.3s ease both;
+  }
+
+  .meta-item { text-align: center; }
+  .meta-item .val {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
+  }
+  .meta-item .lbl {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .divider-v {
+    width: 1px;
+    background: var(--border);
+    height: 40px;
+    align-self: center;
+  }
+
+  .hero-desc {
+    font-size: 0.88rem;
+    line-height: 1.75;
+    color: var(--muted);
+    max-width: 620px;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    animation: fadeUp 0.9s 0.35s ease both;
+  }
+
+  /* ── scroll indicator ── */
+  .scroll-hint {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    animation: pulse 2s ease-in-out infinite;
+    z-index: 2;
+  }
+
+  .scroll-hint svg { width: 18px; height: 18px; opacity: 0.5; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; transform: translateX(-50%) translateY(0); }
+    50%       { opacity: 1;   transform: translateX(-50%) translateY(6px); }
+  }
+
+  /* ── Section ── */
+  .section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 40px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 36px;
+  }
+
+  .section-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border) 0%, transparent 100%);
+  }
+
+  /* ── Description ── */
+  .desc-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 36px;
+    line-height: 1.85;
+    color: #b0aec8;
+    font-size: 0.9rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .desc-card::before {
+    content: '"';
+    font-family: 'Shippori Mincho', serif;
+    font-size: 8rem;
+    color: var(--accent2);
+    opacity: 0.06;
+    position: absolute;
+    top: -10px;
+    left: 16px;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  /* ── Episode Grid ── */
+  .episode-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .ep-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    text-decoration: none;
+    display: block;
+  }
+
+  .ep-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(192,132,252,0.08), rgba(232,160,191,0.06));
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .ep-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    border-color: rgba(192,132,252,0.35);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(192,132,252,0.15);
+  }
+
+  .ep-card:hover::before { opacity: 1; }
+
+  .ep-num {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 1.7rem;
+    font-weight: 600;
+    color: rgba(192,132,252,0.5);
+    line-height: 1;
+    margin-bottom: 6px;
+    transition: color 0.25s;
+  }
+
+  .ep-card:hover .ep-num { color: var(--accent2); }
+
+  .ep-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .ep-time {
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .ep-play {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(192,132,252,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.7);
+    transition: all 0.25s;
+  }
+
+  .ep-card:hover .ep-play {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .ep-play svg { width: 10px; height: 10px; fill: var(--accent2); }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 28px 40px;
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  footer span { color: var(--accent); }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .hero-inner {
+      grid-template-columns: 1fr;
+      align-items: center;
+      padding: 100px 24px 0;
+    }
+    .cover-wrap { max-width: 220px; margin: 0 auto; }
+    .hero { padding-bottom: 40px; }
+    .section { padding: 40px 24px; }
+    .meta-row { gap: 16px; }
+    footer { padding: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero">
+  <div class="hero-bg">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+  </div>
+
+  <div class="hero-inner">
+    <!-- Cover -->
+    <div class="cover-wrap">
+      <div class="cover-frame">
+        <img src="https://animeheaven.me/image.php?lza5t" alt="Komi Can't Communicate Cover" />
+      </div>
+      <div class="score-badge">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        8.2 / 10
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="hero-info">
+      <div class="year-tag">2021 · Anime</div>
+      <h1 class="hero-title">Komi Can't<br/>Communicate</h1>
+      <p class="hero-title-jp">Komi-san wa, Comyushou desu.</p>
+
+      <div class="tags-row">
+        <span class="tag">Comedy</span>
+        <span class="tag">Mental Illness</span>
+        <span class="tag">Romance</span>
+        <span class="tag">School Life</span>
+        <span class="tag">Shounen</span>
+        <span class="tag">Based On A Manga</span>
+      </div>
+
+      <div class="meta-row">
+        <div class="meta-item">
+          <div class="val">12</div>
+          <div class="lbl">Episodes</div>
+        </div>
+        <div class="divider-v"></div>
+        <div class="meta-item">
+          <div class="val">2021</div>
+          <div class="lbl">Year</div>
+        </div>
+        <div class="divider-v"></div>
+        <div class="meta-item">
+          <div class="val">8.2</div>
+          <div class="lbl">Score</div>
+        </div>
+      </div>
+
+      <p class="hero-desc">
+        The journey to 100 friends begins with a single conversation. Socially anxious high school student Shoko Komi's greatest dream is to make some friends, but everyone at school mistakes her crippling social anxiety for cool reserve!
+      </p>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10l5 5 5-5"/></svg>
+    Scroll
+  </div>
+</section>
+
+<!-- ═══════════════ DESCRIPTION ═══════════════ -->
+<div class="section">
+  <div class="section-header">
+    <h2 class="section-title">Synopsis</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="desc-card">
+    The journey to 100 friends begins with a single conversation. Socially anxious high school student Shoko Komi's greatest dream is to make some friends, but everyone at school mistakes her crippling social anxiety for cool reserve! With the whole student body keeping their distance and Komi unable to utter a single word, friendship might be forever beyond her reach. Timid Tadano is a total wallflower, and that's just the way he likes it. He lives to blend in with the background. All that changes when he finds himself alone in a classroom on the first day of high school with the legendary Komi. He quickly realizes she isn't aloof, she's just super awkward. Now he's made it his mission to help her on her quest to make 100 friends!
+  </div>
+</div>
+
+<!-- ═══════════════ EPISODES ═══════════════ -->
+<div class="section" style="padding-top:0">
+  <div class="section-header">
+    <h2 class="section-title">Episodes</h2>
+    <div class="section-line"></div>
+  </div>
+  <div class="episode-grid" id="epGrid"></div>
+</div>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+  Powered by <span>AnimeHeaven API</span> &nbsp;·&nbsp; Owner: <span>@darkshanyt1</span>
+</footer>
+
+<script>
+  const episodes = [
+    { episode: 1,  key: "20680f62385e61414f89ae18302bfc1a", timeAgo: "1037 d ago" },
+    { episode: 2,  key: "438ff7073498532c139321cb7cf96c53", timeAgo: "1037 d ago" },
+    { episode: 3,  key: "4719430f06396fde0537c69390d9976f", timeAgo: "1036 d ago" },
+    { episode: 4,  key: "049bc3079487b67b26319703d08eb504", timeAgo: "1037 d ago" },
+    { episode: 5,  key: "e8714c4e2d13908f199ce2fd8d0b1f13", timeAgo: "1037 d ago" },
+    { episode: 6,  key: "b8098dd80e304abd01babf4bd86f890d", timeAgo: "1037 d ago" },
+    { episode: 7,  key: "c355a21a0fdf494db7a47d5a8459225d", timeAgo: "1037 d ago" },
+    { episode: 8,  key: "18fa887ac28572db0b12d25a6f3320e3", timeAgo: "1037 d ago" },
+    { episode: 9,  key: "ff8b42a2081a66d08160e133a8aeaec6", timeAgo: "1037 d ago" },
+    { episode: 10, key: "f4ecde5384edd30243ef0d5beb5e0617", timeAgo: "1037 d ago" },
+    { episode: 11, key: "9130e3b1c115a2531daad05444c1eea3", timeAgo: "1037 d ago" },
+    { episode: 12, key: "b9f6522054e5990f69e3c9239e32abda", timeAgo: "1037 d ago" },
+  ];
+
+  const grid = document.getElementById('epGrid');
+
+  episodes.forEach((ep, i) => {
+    const card = document.createElement('a');
+    card.className = 'ep-card';
+    card.href = `#ep-${ep.episode}`;
+    card.style.animationDelay = `${i * 0.04}s`;
+    card.innerHTML = `
+      <div class="ep-num">0${ep.episode < 10 ? ep.episode : ep.episode}</div>
+      <div class="ep-label">Episode ${ep.episode}</div>
+      <div class="ep-time">${ep.timeAgo}</div>
+      <div class="ep-play">
+        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      </div>
+    `;
+
+    // stagger reveal with IntersectionObserver
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+    card.style.transition = `opacity 0.4s ${i*0.04}s ease, transform 0.4s ${i*0.04}s ease`;
+
+    grid.appendChild(card);
+  });
+
+  // reveal on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.ep-card').forEach(c => observer.observe(c));
+</script>
+</body>
+</html>

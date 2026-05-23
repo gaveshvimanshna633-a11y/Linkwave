@@ -6,14 +6,16 @@
 
 <title>STREAM X PLAYER</title>
 
+<!-- VIDEO JS -->
 <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet"/>
 
 <style>
+
 *{
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family:Arial, sans-serif;
+font-family:Arial,sans-serif;
 }
 
 body{
@@ -23,69 +25,27 @@ justify-content:center;
 align-items:center;
 min-height:100vh;
 padding:15px;
+overflow:hidden;
 }
 
+/* PLAYER WRAPPER */
 .player-wrapper{
 width:100%;
 max-width:1000px;
 position:relative;
 }
 
+/* PLAYER */
 .video-js{
 width:100%;
 height:auto;
 border-radius:18px;
 overflow:hidden;
 background:black;
-box-shadow:0 0 40px rgba(255,0,0,.25);
+box-shadow:0 0 40px rgba(255,0,0,.3);
 }
 
-/* CONTROL BAR */
-.vjs-control-bar{
-background:linear-gradient(to top,
-rgba(0,0,0,.9),
-rgba(0,0,0,.2))!important;
-
-backdrop-filter:blur(10px);
-height:55px!important;
-}
-
-/* PROGRESS */
-.vjs-play-progress{
-background:#ff0000!important;
-}
-
-.vjs-volume-level{
-background:#ff0000!important;
-}
-
-/* BIG PLAY */
-.vjs-big-play-button{
-background:#008cff!important;
-border:none!important;
-width:90px!important;
-height:90px!important;
-line-height:90px!important;
-border-radius:50%!important;
-top:50%!important;
-left:50%!important;
-transform:translate(-50%,-50%)!important;
-font-size:45px!important;
-box-shadow:0 0 30px rgba(0,140,255,.7);
-}
-
-/* BUTTONS */
-.vjs-control{
-color:white!important;
-}
-
-/* SETTINGS MENU */
-.vjs-menu-content{
-background:#111!important;
-border-radius:10px;
-}
-
-/* TITLE */
+/* TOP TITLE */
 .movie-title{
 position:absolute;
 top:15px;
@@ -109,6 +69,7 @@ border-radius:10px;
 font-weight:bold;
 color:white;
 font-size:14px;
+backdrop-filter:blur(10px);
 }
 
 .logo span{
@@ -117,11 +78,72 @@ padding:2px 6px;
 border-radius:5px;
 }
 
+/* CONTROL BAR */
+.vjs-control-bar{
+background:linear-gradient(to top,
+rgba(0,0,0,.95),
+rgba(0,0,0,.2))!important;
+
+backdrop-filter:blur(10px);
+height:55px!important;
+}
+
+/* PROGRESS BAR */
+.vjs-play-progress{
+background:#ff0000!important;
+}
+
+.vjs-volume-level{
+background:#ff0000!important;
+}
+
+/* BIG PLAY BUTTON */
+.vjs-big-play-button{
+background:#008cff!important;
+border:none!important;
+width:90px!important;
+height:90px!important;
+line-height:90px!important;
+border-radius:50%!important;
+top:50%!important;
+left:50%!important;
+transform:translate(-50%,-50%)!important;
+font-size:45px!important;
+box-shadow:0 0 30px rgba(0,140,255,.8);
+}
+
+/* BUTTON COLORS */
+.vjs-control{
+color:white!important;
+}
+
+/* SETTINGS MENU */
+.vjs-menu-content{
+background:#111!important;
+border-radius:10px;
+}
+
 /* SUBTITLE STYLE */
 .video-js .vjs-text-track-display{
-font-size:20px;
+font-size:22px;
 font-weight:bold;
-text-shadow:2px 2px 5px black;
+text-shadow:2px 2px 6px black;
+}
+
+/* SUBTITLE BUTTON */
+.subtitle-btn{
+position:fixed;
+bottom:20px;
+right:20px;
+z-index:9999;
+background:red;
+color:white;
+border:none;
+padding:12px 18px;
+border-radius:12px;
+font-weight:bold;
+cursor:pointer;
+box-shadow:0 0 20px rgba(255,0,0,.5);
 }
 
 /* MOBILE */
@@ -139,6 +161,7 @@ font-size:16px;
 }
 
 }
+
 </style>
 </head>
 
@@ -146,14 +169,17 @@ font-size:16px;
 
 <div class="player-wrapper">
 
+<!-- MOVIE TITLE -->
 <div class="movie-title">
-Deadpool & Wolverine
+Raayan (2024)
 </div>
 
+<!-- LOGO -->
 <div class="logo">
 STREAM <span>X</span>
 </div>
 
+<!-- PLAYER -->
 <video
 id="streamx-player"
 class="video-js vjs-big-play-centered"
@@ -163,9 +189,10 @@ poster="https://image.tmdb.org/t/p/original/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg"
 data-setup='{}'
 >
 
+<!-- VIDEO SOURCE -->
 <source
-src="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
-type="application/x-mpegURL">
+src="https://dhruvmirrorpremium1-a2c47cf17a7f.herokuapp.com/59262/Raayan+%282024%29+480P.mp4?hash=AgADfg"
+type="video/mp4">
 
 <!-- SUBTITLE -->
 <track
@@ -179,9 +206,17 @@ default>
 
 </div>
 
+<!-- SUBTITLE BUTTON -->
+<button class="subtitle-btn" id="uploadSubtitle">
+CC Upload
+</button>
+
+<!-- VIDEO JS -->
 <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
 
 <script>
+
+/* PLAYER INIT */
 const player = videojs('streamx-player', {
 
 fluid:true,
@@ -195,6 +230,11 @@ fullscreenToggle:true,
 pictureInPictureToggle:true
 }
 
+});
+
+/* AUTOPLAY */
+player.ready(function(){
+player.play();
 });
 
 /* DOUBLE TAP SEEK */
@@ -238,11 +278,13 @@ player.currentTime(player.currentTime()-10);
 }
 
 if(e.key === ' '){
+
 if(player.paused()){
 player.play();
 }else{
 player.pause();
 }
+
 }
 
 });
@@ -252,27 +294,13 @@ const input = document.createElement('input');
 
 input.type = 'file';
 input.accept = '.vtt,.srt';
-
 input.style.display = 'none';
 
 document.body.appendChild(input);
 
-const btn = document.createElement('button');
-
-btn.innerHTML = 'CC Upload';
-btn.style.position='fixed';
-btn.style.bottom='20px';
-btn.style.right='20px';
-btn.style.zIndex='9999';
-btn.style.background='red';
-btn.style.color='white';
-btn.style.border='none';
-btn.style.padding='10px 15px';
-btn.style.borderRadius='10px';
-
-document.body.appendChild(btn);
-
-btn.onclick = ()=> input.click();
+document.getElementById('uploadSubtitle').onclick = ()=>{
+input.click();
+};
 
 input.onchange = ()=>{
 
@@ -284,11 +312,11 @@ const url = URL.createObjectURL(file);
 
 const track = document.createElement('track');
 
-track.kind='subtitles';
-track.label='Uploaded Subtitle';
-track.srclang='si';
-track.src=url;
-track.default=true;
+track.kind = 'subtitles';
+track.label = 'Uploaded Subtitle';
+track.srclang = 'si';
+track.src = url;
+track.default = true;
 
 player.el().querySelector('video').appendChild(track);
 
@@ -296,7 +324,29 @@ alert('Subtitle Loaded');
 
 };
 
+/* SAVE WATCH TIME */
+player.on('timeupdate', ()=>{
+
+localStorage.setItem(
+'streamx-time',
+player.currentTime()
+);
+
+});
+
+/* RESUME WATCH */
+player.ready(()=>{
+
+const savedTime =
+localStorage.getItem('streamx-time');
+
+if(savedTime){
+player.currentTime(savedTime);
+}
+
+});
+
 </script>
 
 </body>
-  </html>
+</html>

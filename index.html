@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>STREAM X PLAYER</title>
+
+<link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet"/>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, sans-serif;
+}
+
+body{
+background:#050505;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+padding:15px;
+}
+
+.player-wrapper{
+width:100%;
+max-width:1000px;
+position:relative;
+}
+
+.video-js{
+width:100%;
+height:auto;
+border-radius:18px;
+overflow:hidden;
+background:black;
+box-shadow:0 0 40px rgba(255,0,0,.25);
+}
+
+/* CONTROL BAR */
+.vjs-control-bar{
+background:linear-gradient(to top,
+rgba(0,0,0,.9),
+rgba(0,0,0,.2))!important;
+
+backdrop-filter:blur(10px);
+height:55px!important;
+}
+
+/* PROGRESS */
+.vjs-play-progress{
+background:#ff0000!important;
+}
+
+.vjs-volume-level{
+background:#ff0000!important;
+}
+
+/* BIG PLAY */
+.vjs-big-play-button{
+background:#008cff!important;
+border:none!important;
+width:90px!important;
+height:90px!important;
+line-height:90px!important;
+border-radius:50%!important;
+top:50%!important;
+left:50%!important;
+transform:translate(-50%,-50%)!important;
+font-size:45px!important;
+box-shadow:0 0 30px rgba(0,140,255,.7);
+}
+
+/* BUTTONS */
+.vjs-control{
+color:white!important;
+}
+
+/* SETTINGS MENU */
+.vjs-menu-content{
+background:#111!important;
+border-radius:10px;
+}
+
+/* TITLE */
+.movie-title{
+position:absolute;
+top:15px;
+left:20px;
+z-index:999;
+color:white;
+font-size:20px;
+font-weight:bold;
+text-shadow:0 0 10px black;
+}
+
+/* LOGO */
+.logo{
+position:absolute;
+top:15px;
+right:15px;
+z-index:999;
+background:rgba(0,0,0,.6);
+padding:8px 12px;
+border-radius:10px;
+font-weight:bold;
+color:white;
+font-size:14px;
+}
+
+.logo span{
+background:red;
+padding:2px 6px;
+border-radius:5px;
+}
+
+/* SUBTITLE STYLE */
+.video-js .vjs-text-track-display{
+font-size:20px;
+font-weight:bold;
+text-shadow:2px 2px 5px black;
+}
+
+/* MOBILE */
+@media(max-width:768px){
+
+.vjs-big-play-button{
+width:70px!important;
+height:70px!important;
+line-height:70px!important;
+font-size:35px!important;
+}
+
+.movie-title{
+font-size:16px;
+}
+
+}
+</style>
+</head>
+
+<body>
+
+<div class="player-wrapper">
+
+<div class="movie-title">
+Deadpool & Wolverine
+</div>
+
+<div class="logo">
+STREAM <span>X</span>
+</div>
+
+<video
+id="streamx-player"
+class="video-js vjs-big-play-centered"
+controls
+preload="auto"
+poster="https://image.tmdb.org/t/p/original/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg"
+data-setup='{}'
+>
+
+<source
+src="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+type="application/x-mpegURL">
+
+<!-- SUBTITLE -->
+<track
+kind="subtitles"
+label="Sinhala"
+srclang="si"
+src="subtitles.vtt"
+default>
+
+</video>
+
+</div>
+
+<script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+
+<script>
+const player = videojs('streamx-player', {
+
+fluid:true,
+responsive:true,
+
+playbackRates:[0.5,1,1.5,2],
+
+controlBar:{
+volumePanel:true,
+fullscreenToggle:true,
+pictureInPictureToggle:true
+}
+
+});
+
+/* DOUBLE TAP SEEK */
+let lastTap = 0;
+
+player.el().addEventListener('touchend', function(e){
+
+const currentTime = new Date().getTime();
+const tapLength = currentTime - lastTap;
+
+if(tapLength < 300 && tapLength > 0){
+
+const x = e.changedTouches[0].clientX;
+const width = window.innerWidth;
+
+if(x < width / 2){
+player.currentTime(player.currentTime() - 10);
+}else{
+player.currentTime(player.currentTime() + 10);
+}
+
+}
+
+lastTap = currentTime;
+
+});
+
+/* KEYBOARD SHORTCUTS */
+document.addEventListener('keydown', (e)=>{
+
+if(e.key === 'f'){
+player.requestFullscreen();
+}
+
+if(e.key === 'ArrowRight'){
+player.currentTime(player.currentTime()+10);
+}
+
+if(e.key === 'ArrowLeft'){
+player.currentTime(player.currentTime()-10);
+}
+
+if(e.key === ' '){
+if(player.paused()){
+player.play();
+}else{
+player.pause();
+}
+}
+
+});
+
+/* SUBTITLE UPLOAD */
+const input = document.createElement('input');
+
+input.type = 'file';
+input.accept = '.vtt,.srt';
+
+input.style.display = 'none';
+
+document.body.appendChild(input);
+
+const btn = document.createElement('button');
+
+btn.innerHTML = 'CC Upload';
+btn.style.position='fixed';
+btn.style.bottom='20px';
+btn.style.right='20px';
+btn.style.zIndex='9999';
+btn.style.background='red';
+btn.style.color='white';
+btn.style.border='none';
+btn.style.padding='10px 15px';
+btn.style.borderRadius='10px';
+
+document.body.appendChild(btn);
+
+btn.onclick = ()=> input.click();
+
+input.onchange = ()=>{
+
+const file = input.files[0];
+
+if(!file) return;
+
+const url = URL.createObjectURL(file);
+
+const track = document.createElement('track');
+
+track.kind='subtitles';
+track.label='Uploaded Subtitle';
+track.srclang='si';
+track.src=url;
+track.default=true;
+
+player.el().querySelector('video').appendChild(track);
+
+alert('Subtitle Loaded');
+
+};
+
+</script>
+
+</body>
+  </html>

@@ -5,29 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Custom Movie Player</title>
     <style>
-        /* මූලික සැකසුම් */
         body {
             background-color: #141414;
             color: #fff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
         }
 
-        /* ප්ලේයර් එකේ ප්‍රධාන කොටස */
         .custom-player {
-            max-width: 800px;
+            max-width: 750px;
             width: 100%;
             position: relative;
             overflow: hidden;
             background: #000;
             border-radius: 12px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-            user-select: none; /* Text select කිරීම වැළැක්වීම (Protection) */
         }
 
         .video-screen {
@@ -35,56 +31,36 @@
             display: block;
         }
 
-        /* සබ්ටයිටල් පෙනුම හැඩගැස්වීම */
-        video::cue {
-            background: rgba(0, 0, 0, 0.75);
-            color: #fff;
-            font-size: 18px;
-            border-radius: 4px;
-        }
-
-        /* Controls තීරුව */
         .player-controls {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.95));
-            padding: 20px 15px 15px 15px;
-            opacity: 0; /* සාමාන්‍යයෙන් කන්ට්‍රෝල්ස් හැංගිලා තියෙන්නේ */
-            transition: opacity 0.3s ease-in-out;
-            z-index: 2147483647; /* වෙනත් දේවල් වලට යට නොවීමට */
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 15px;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
 
-        /* මවුස් එක හෝ ටච් එක ප්ලේයර් එක උඩට ආවම Controls පෙන්වීම */
-        .custom-player:hover .player-controls,
-        .custom-player:focus-within .player-controls {
+        .custom-player:hover .player-controls {
             opacity: 1;
         }
 
-        /* වීඩියෝ ධාවන කාල තීරුව (Progress Bar) */
         .progress-bar {
             background: rgba(255,255,255,0.2);
             height: 6px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             cursor: pointer;
             border-radius: 3px;
-            position: relative;
-            transition: height 0.1s;
-        }
-
-        .progress-bar:hover {
-            height: 8px; /* මවුස් එක ලං කරද්දී ටිකක් මහත වෙනවා */
         }
 
         .progress-filled {
-            background: #ff0000; /* ඔයාගේ වෙබ් සයිට් එකේ තේමා පාට (රතු) */
+            background: #ff0000;
             height: 100%;
             width: 0%;
             border-radius: 3px;
         }
 
-        /* බොත්තම් සැකසුම් */
         .control-buttons {
             display: flex;
             justify-content: space-between;
@@ -94,7 +70,7 @@
         .left-controls, .right-controls {
             display: flex;
             align-items: center;
-            gap: 18px;
+            gap: 15px;
         }
 
         .control-buttons button {
@@ -103,33 +79,22 @@
             color: white;
             font-size: 16px;
             cursor: pointer;
-            transition: transform 0.1s;
-            padding: 5px;
-            outline: none;
         }
 
-        .control-buttons button:hover {
-            transform: scale(1.15);
-        }
-
-        /* Volume තීරුව */
         .volume-slider {
             width: 70px;
             cursor: pointer;
-            accent-color: #ff0000; /* Slider එක රතු පාට කිරීමට */
+            accent-color: #ff0000;
         }
     </style>
 </head>
 <body>
 
     <div class="custom-player" id="myPlayer">
-        <!-- වීඩියෝ එක (ඔයා දුන්න ලින්ක් එක සහ CORS ආරක්ෂාව සමඟ) -->
-        <video class="video-screen" src="https://dhruvmirrorpremium1-a2c47cf17a7f.herokuapp.com/59808/Mortal+Kombat+Ii+%282026%29+720P.mp4?hash=AgADiS" crossorigin="anonymous">
-            <!-- සිංහල සබ්ටයිටල් ෆයිල් එකක් තියෙනවා නම් මෙතන src එකට දාන්න -->
-            <track kind="subtitles" src="sinhala-subtitles.vtt" srclang="si" label="Sinhala" default>
+        <!-- මෙතනට මම හැමදාම වැඩ කරන sample වීඩියෝ ලින්ක් එකක් දැම්මා ටෙස්ට් කරන්න -->
+        <video class="video-screen" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" crossorigin="anonymous">
         </video>
         
-        <!-- පාලක පැනලය (Controls) -->
         <div class="player-controls">
             <div class="progress-bar">
                 <div class="progress-filled"></div>
@@ -137,15 +102,14 @@
             
             <div class="control-buttons">
                 <div class="left-controls">
-                    <button class="play-btn" title="Play/Pause">▶</button>
-                    <!-- තත්පර 10ක් පස්සට/ඉස්සරහට බොත්තම් -->
-                    <button class="skip-btn" data-skip="-10" title="Rewind 10s">⏪ 10s</button>
-                    <button class="skip-btn" data-skip="10" title="Forward 10s">10s ⏩</button>
-                    <input type="range" class="volume-slider" min="0" max="1" step="0.05" value="1" title="Volume">
+                    <button class="play-btn">▶</button>
+                    <button class="skip-btn" data-skip="-10">⏪ 10s</button>
+                    <button class="skip-btn" data-skip="10">10s ⏩</button>
+                    <input type="range" class="volume-slider" min="0" max="1" step="0.05" value="1">
                 </div>
                 
                 <div class="right-controls">
-                    <button class="fullscreen-btn" title="Fullscreen">⛶</button>
+                    <button class="fullscreen-btn">⛶</button>
                 </div>
             </div>
         </div>
@@ -161,35 +125,31 @@
         const fullscreenBtn = player.querySelector('.fullscreen-btn');
         const skipButtons = player.querySelectorAll('[data-skip]');
 
-        // 1. Play සහ Pause ක්‍රියාවලිය
         function togglePlay() {
             if (video.paused) {
                 video.play();
-                playBtn.textContent = '❚❚'; // Pause ලකුණ
+                playBtn.textContent = '❚❚';
             } else {
                 video.pause();
-                playBtn.textContent = '▶'; // Play ලකුණ
+                playBtn.textContent = '▶';
             }
         }
 
-        // 2. Timeline එක (Progress Bar) අප්ඩේට් කිරීම
         function handleProgress() {
             const percent = (video.currentTime / video.duration) * 100;
             progressFilled.style.width = `${percent}%`;
         }
 
-        // Timeline එක ක්ලික් කරලා කැමති තැනකට වීඩියෝ එක ගෙනයෑම
         function scrub(e) {
             const scrubTime = (e.offsetX / progressBar.offsetWidth) * video.duration;
             video.currentTime = scrubTime;
         }
 
-        // 3. බොත්තම් මඟින් තත්පර 10ක් Skip කිරීම
         function skip() {
             video.currentTime += parseFloat(this.dataset.skip);
         }
 
-        // 4. මොබයිල් ෆෝන් සඳහා Double Tap (තත්පර 10ක් ඉස්සරහට/පස්සට)
+        // Double Tap
         let lastTap = 0;
         video.addEventListener('touchstart', function (e) {
             const currentTime = new Date().getTime();
@@ -198,59 +158,33 @@
                 const rect = video.getBoundingClientRect();
                 const x = e.touches[0].clientX - rect.left;
                 if (x > rect.width / 2) {
-                    video.currentTime += 10; // දකුණු පැත්ත double tap කලොත් +10s
+                    video.currentTime += 10;
                 } else {
-                    video.currentTime -= 10; // වම් පැත්ත double tap කලොත් -10s
+                    video.currentTime -= 10;
                 }
             }
             lastTap = currentTime;
         });
 
-        // 5. පරිගණක සඳහා Keyboard Shortcuts
+        // Keyboard Shortcuts
         window.addEventListener('keydown', function(e) {
-            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
-
-            if (e.code === 'Space') {
-                e.preventDefault();
-                togglePlay();
-            } else if (e.code === 'ArrowRight') {
-                video.currentTime += 10;
-            } else if (e.code === 'ArrowLeft') {
-                video.currentTime -= 10;
-            } else if (e.code === 'ArrowUp') {
-                e.preventDefault();
-                video.volume = Math.min(1, video.volume + 0.1);
-                volumeSlider.value = video.volume;
-            } else if (e.code === 'ArrowDown') {
-                e.preventDefault();
-                video.volume = Math.max(0, video.volume - 0.1);
-                volumeSlider.value = video.volume;
-            } else if (e.code === 'KeyF') {
-                toggleFullscreen();
-            }
+            if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+            else if (e.code === 'ArrowRight') { video.currentTime += 10; }
+            else if (e.code === 'ArrowLeft') { video.currentTime -= 10; }
         });
 
-        // 6. වීඩියෝ එක හොරකම් කිරීම වැළැක්වීම (Right-Click බ්ලොක් කිරීම)
-        player.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
+        // Right Click Disable
+        player.addEventListener('contextmenu', e => e.preventDefault());
 
-        // 7. Fullscreen ක්‍රියාකාරීත්වය
+        // Fullscreen
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
-                if (player.requestFullscreen) {
-                    player.requestFullscreen();
-                } else if (player.webkitRequestFullscreen) { /* Safari සඳහා */
-                    player.webkitRequestFullscreen();
-                }
+                player.requestFullscreen().catch(err => console.log(err));
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
+                document.exitFullscreen();
             }
         }
 
-        // Event Listeners සම්බන්ධ කිරීම
         video.addEventListener('click', togglePlay);
         playBtn.addEventListener('click', togglePlay);
         video.addEventListener('timeupdate', handleProgress);

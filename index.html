@@ -1,352 +1,268 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="si">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Custom Movie Player</title>
+    <style>
+        /* මූලික සැකසුම් */
+        body {
+            background-color: #141414;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
 
-<title>STREAM X PLAYER</title>
+        /* ප්ලේයර් එකේ ප්‍රධාන කොටස */
+        .custom-player {
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            background: #000;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            user-select: none; /* Text select කිරීම වැළැක්වීම (Protection) */
+        }
 
-<!-- VIDEO JS -->
-<link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet"/>
+        .video-screen {
+            width: 100%;
+            display: block;
+        }
 
-<style>
+        /* සබ්ටයිටල් පෙනුම හැඩගැස්වීම */
+        video::cue {
+            background: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            font-size: 18px;
+            border-radius: 4px;
+        }
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
-}
+        /* Controls තීරුව */
+        .player-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.95));
+            padding: 20px 15px 15px 15px;
+            opacity: 0; /* සාමාන්‍යයෙන් කන්ට්‍රෝල්ස් හැංගිලා තියෙන්නේ */
+            transition: opacity 0.3s ease-in-out;
+            z-index: 2147483647; /* වෙනත් දේවල් වලට යට නොවීමට */
+        }
 
-body{
-background:#050505;
-display:flex;
-justify-content:center;
-align-items:center;
-min-height:100vh;
-padding:15px;
-overflow:hidden;
-}
+        /* මවුස් එක හෝ ටච් එක ප්ලේයර් එක උඩට ආවම Controls පෙන්වීම */
+        .custom-player:hover .player-controls,
+        .custom-player:focus-within .player-controls {
+            opacity: 1;
+        }
 
-/* PLAYER WRAPPER */
-.player-wrapper{
-width:100%;
-max-width:1000px;
-position:relative;
-}
+        /* වීඩියෝ ධාවන කාල තීරුව (Progress Bar) */
+        .progress-bar {
+            background: rgba(255,255,255,0.2);
+            height: 6px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            border-radius: 3px;
+            position: relative;
+            transition: height 0.1s;
+        }
 
-/* PLAYER */
-.video-js{
-width:100%;
-height:auto;
-border-radius:18px;
-overflow:hidden;
-background:black;
-box-shadow:0 0 40px rgba(255,0,0,.3);
-}
+        .progress-bar:hover {
+            height: 8px; /* මවුස් එක ලං කරද්දී ටිකක් මහත වෙනවා */
+        }
 
-/* TOP TITLE */
-.movie-title{
-position:absolute;
-top:15px;
-left:20px;
-z-index:999;
-color:white;
-font-size:20px;
-font-weight:bold;
-text-shadow:0 0 10px black;
-}
+        .progress-filled {
+            background: #ff0000; /* ඔයාගේ වෙබ් සයිට් එකේ තේමා පාට (රතු) */
+            height: 100%;
+            width: 0%;
+            border-radius: 3px;
+        }
 
-/* LOGO */
-.logo{
-position:absolute;
-top:15px;
-right:15px;
-z-index:999;
-background:rgba(0,0,0,.6);
-padding:8px 12px;
-border-radius:10px;
-font-weight:bold;
-color:white;
-font-size:14px;
-backdrop-filter:blur(10px);
-}
+        /* බොත්තම් සැකසුම් */
+        .control-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-.logo span{
-background:red;
-padding:2px 6px;
-border-radius:5px;
-}
+        .left-controls, .right-controls {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
 
-/* CONTROL BAR */
-.vjs-control-bar{
-background:linear-gradient(to top,
-rgba(0,0,0,.95),
-rgba(0,0,0,.2))!important;
+        .control-buttons button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            padding: 5px;
+            outline: none;
+        }
 
-backdrop-filter:blur(10px);
-height:55px!important;
-}
+        .control-buttons button:hover {
+            transform: scale(1.15);
+        }
 
-/* PROGRESS BAR */
-.vjs-play-progress{
-background:#ff0000!important;
-}
-
-.vjs-volume-level{
-background:#ff0000!important;
-}
-
-/* BIG PLAY BUTTON */
-.vjs-big-play-button{
-background:#008cff!important;
-border:none!important;
-width:90px!important;
-height:90px!important;
-line-height:90px!important;
-border-radius:50%!important;
-top:50%!important;
-left:50%!important;
-transform:translate(-50%,-50%)!important;
-font-size:45px!important;
-box-shadow:0 0 30px rgba(0,140,255,.8);
-}
-
-/* BUTTON COLORS */
-.vjs-control{
-color:white!important;
-}
-
-/* SETTINGS MENU */
-.vjs-menu-content{
-background:#111!important;
-border-radius:10px;
-}
-
-/* SUBTITLE STYLE */
-.video-js .vjs-text-track-display{
-font-size:22px;
-font-weight:bold;
-text-shadow:2px 2px 6px black;
-}
-
-/* SUBTITLE BUTTON */
-.subtitle-btn{
-position:fixed;
-bottom:20px;
-right:20px;
-z-index:9999;
-background:red;
-color:white;
-border:none;
-padding:12px 18px;
-border-radius:12px;
-font-weight:bold;
-cursor:pointer;
-box-shadow:0 0 20px rgba(255,0,0,.5);
-}
-
-/* MOBILE */
-@media(max-width:768px){
-
-.vjs-big-play-button{
-width:70px!important;
-height:70px!important;
-line-height:70px!important;
-font-size:35px!important;
-}
-
-.movie-title{
-font-size:16px;
-}
-
-}
-
-</style>
+        /* Volume තීරුව */
+        .volume-slider {
+            width: 70px;
+            cursor: pointer;
+            accent-color: #ff0000; /* Slider එක රතු පාට කිරීමට */
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="player-wrapper">
+    <div class="custom-player" id="myPlayer">
+        <!-- වීඩියෝ එක (ඔයා දුන්න ලින්ක් එක සහ CORS ආරක්ෂාව සමඟ) -->
+        <video class="video-screen" src="https://dhruvmirrorpremium1-a2c47cf17a7f.herokuapp.com/59808/Mortal+Kombat+Ii+%282026%29+720P.mp4?hash=AgADiS" crossorigin="anonymous">
+            <!-- සිංහල සබ්ටයිටල් ෆයිල් එකක් තියෙනවා නම් මෙතන src එකට දාන්න -->
+            <track kind="subtitles" src="sinhala-subtitles.vtt" srclang="si" label="Sinhala" default>
+        </video>
+        
+        <!-- පාලක පැනලය (Controls) -->
+        <div class="player-controls">
+            <div class="progress-bar">
+                <div class="progress-filled"></div>
+            </div>
+            
+            <div class="control-buttons">
+                <div class="left-controls">
+                    <button class="play-btn" title="Play/Pause">▶</button>
+                    <!-- තත්පර 10ක් පස්සට/ඉස්සරහට බොත්තම් -->
+                    <button class="skip-btn" data-skip="-10" title="Rewind 10s">⏪ 10s</button>
+                    <button class="skip-btn" data-skip="10" title="Forward 10s">10s ⏩</button>
+                    <input type="range" class="volume-slider" min="0" max="1" step="0.05" value="1" title="Volume">
+                </div>
+                
+                <div class="right-controls">
+                    <button class="fullscreen-btn" title="Fullscreen">⛶</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<!-- MOVIE TITLE -->
-<div class="movie-title">
-Raayan (2024)
-</div>
+    <script>
+        const player = document.getElementById('myPlayer');
+        const video = player.querySelector('.video-screen');
+        const playBtn = player.querySelector('.play-btn');
+        const progressBar = player.querySelector('.progress-bar');
+        const progressFilled = player.querySelector('.progress-filled');
+        const volumeSlider = player.querySelector('.volume-slider');
+        const fullscreenBtn = player.querySelector('.fullscreen-btn');
+        const skipButtons = player.querySelectorAll('[data-skip]');
 
-<!-- LOGO -->
-<div class="logo">
-STREAM <span>X</span>
-</div>
+        // 1. Play සහ Pause ක්‍රියාවලිය
+        function togglePlay() {
+            if (video.paused) {
+                video.play();
+                playBtn.textContent = '❚❚'; // Pause ලකුණ
+            } else {
+                video.pause();
+                playBtn.textContent = '▶'; // Play ලකුණ
+            }
+        }
 
-<!-- PLAYER -->
-<video
-id="streamx-player"
-class="video-js vjs-big-play-centered"
-controls
-preload="auto"
-poster="https://image.tmdb.org/t/p/original/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg"
-data-setup='{}'
->
+        // 2. Timeline එක (Progress Bar) අප්ඩේට් කිරීම
+        function handleProgress() {
+            const percent = (video.currentTime / video.duration) * 100;
+            progressFilled.style.width = `${percent}%`;
+        }
 
-<!-- VIDEO SOURCE -->
-<source
-src="https://dhruvmirrorpremium1-a2c47cf17a7f.herokuapp.com/59426/_Daredevil_Born_Again_2026_S02_EP%C2%A004%C2%A0TRUE_WEB_DL_4K_SDR_.mkv?hash=AgADjB"
-type="video/mp4">
+        // Timeline එක ක්ලික් කරලා කැමති තැනකට වීඩියෝ එක ගෙනයෑම
+        function scrub(e) {
+            const scrubTime = (e.offsetX / progressBar.offsetWidth) * video.duration;
+            video.currentTime = scrubTime;
+        }
 
-<!-- SUBTITLE -->
-<track
-kind="subtitles"
-label="Sinhala"
-srclang="si"
-src="subtitles.vtt"
-default>
+        // 3. බොත්තම් මඟින් තත්පර 10ක් Skip කිරීම
+        function skip() {
+            video.currentTime += parseFloat(this.dataset.skip);
+        }
 
-</video>
+        // 4. මොබයිල් ෆෝන් සඳහා Double Tap (තත්පර 10ක් ඉස්සරහට/පස්සට)
+        let lastTap = 0;
+        video.addEventListener('touchstart', function (e) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            if (tapLength < 300 && tapLength > 0) {
+                const rect = video.getBoundingClientRect();
+                const x = e.touches[0].clientX - rect.left;
+                if (x > rect.width / 2) {
+                    video.currentTime += 10; // දකුණු පැත්ත double tap කලොත් +10s
+                } else {
+                    video.currentTime -= 10; // වම් පැත්ත double tap කලොත් -10s
+                }
+            }
+            lastTap = currentTime;
+        });
 
-</div>
+        // 5. පරිගණක සඳහා Keyboard Shortcuts
+        window.addEventListener('keydown', function(e) {
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
 
-<!-- SUBTITLE BUTTON -->
-<button class="subtitle-btn" id="uploadSubtitle">
-CC Upload
-</button>
+            if (e.code === 'Space') {
+                e.preventDefault();
+                togglePlay();
+            } else if (e.code === 'ArrowRight') {
+                video.currentTime += 10;
+            } else if (e.code === 'ArrowLeft') {
+                video.currentTime -= 10;
+            } else if (e.code === 'ArrowUp') {
+                e.preventDefault();
+                video.volume = Math.min(1, video.volume + 0.1);
+                volumeSlider.value = video.volume;
+            } else if (e.code === 'ArrowDown') {
+                e.preventDefault();
+                video.volume = Math.max(0, video.volume - 0.1);
+                volumeSlider.value = video.volume;
+            } else if (e.code === 'KeyF') {
+                toggleFullscreen();
+            }
+        });
 
-<!-- VIDEO JS -->
-<script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+        // 6. වීඩියෝ එක හොරකම් කිරීම වැළැක්වීම (Right-Click බ්ලොක් කිරීම)
+        player.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
 
-<script>
+        // 7. Fullscreen ක්‍රියාකාරීත්වය
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                if (player.requestFullscreen) {
+                    player.requestFullscreen();
+                } else if (player.webkitRequestFullscreen) { /* Safari සඳහා */
+                    player.webkitRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
 
-/* PLAYER INIT */
-const player = videojs('streamx-player', {
+        // Event Listeners සම්බන්ධ කිරීම
+        video.addEventListener('click', togglePlay);
+        playBtn.addEventListener('click', togglePlay);
+        video.addEventListener('timeupdate', handleProgress);
+        volumeSlider.addEventListener('input', (e) => video.volume = e.target.value);
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+        skipButtons.forEach(button => button.addEventListener('click', skip));
 
-fluid:true,
-responsive:true,
-
-playbackRates:[0.5,1,1.5,2],
-
-controlBar:{
-volumePanel:true,
-fullscreenToggle:true,
-pictureInPictureToggle:true
-}
-
-});
-
-/* AUTOPLAY */
-player.ready(function(){
-player.play();
-});
-
-/* DOUBLE TAP SEEK */
-let lastTap = 0;
-
-player.el().addEventListener('touchend', function(e){
-
-const currentTime = new Date().getTime();
-const tapLength = currentTime - lastTap;
-
-if(tapLength < 300 && tapLength > 0){
-
-const x = e.changedTouches[0].clientX;
-const width = window.innerWidth;
-
-if(x < width / 2){
-player.currentTime(player.currentTime() - 10);
-}else{
-player.currentTime(player.currentTime() + 10);
-}
-
-}
-
-lastTap = currentTime;
-
-});
-
-/* KEYBOARD SHORTCUTS */
-document.addEventListener('keydown', (e)=>{
-
-if(e.key === 'f'){
-player.requestFullscreen();
-}
-
-if(e.key === 'ArrowRight'){
-player.currentTime(player.currentTime()+10);
-}
-
-if(e.key === 'ArrowLeft'){
-player.currentTime(player.currentTime()-10);
-}
-
-if(e.key === ' '){
-
-if(player.paused()){
-player.play();
-}else{
-player.pause();
-}
-
-}
-
-});
-
-/* SUBTITLE UPLOAD */
-const input = document.createElement('input');
-
-input.type = 'file';
-input.accept = '.vtt,.srt';
-input.style.display = 'none';
-
-document.body.appendChild(input);
-
-document.getElementById('uploadSubtitle').onclick = ()=>{
-input.click();
-};
-
-input.onchange = ()=>{
-
-const file = input.files[0];
-
-if(!file) return;
-
-const url = URL.createObjectURL(file);
-
-const track = document.createElement('track');
-
-track.kind = 'subtitles';
-track.label = 'Uploaded Subtitle';
-track.srclang = 'si';
-track.src = url;
-track.default = true;
-
-player.el().querySelector('video').appendChild(track);
-
-alert('Subtitle Loaded');
-
-};
-
-/* SAVE WATCH TIME */
-player.on('timeupdate', ()=>{
-
-localStorage.setItem(
-'streamx-time',
-player.currentTime()
-);
-
-});
-
-/* RESUME WATCH */
-player.ready(()=>{
-
-const savedTime =
-localStorage.getItem('streamx-time');
-
-if(savedTime){
-player.currentTime(savedTime);
-}
-
-});
-
-</script>
-
+        let mousedown = false;
+        progressBar.addEventListener('click', scrub);
+        progressBar.addEventListener('mousemove', (e) => mousedown && scrub(e));
+        progressBar.addEventListener('mousedown', () => mousedown = true);
+        progressBar.addEventListener('mouseup', () => mousedown = false);
+    </script>
 </body>
 </html>

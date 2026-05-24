@@ -1,202 +1,555 @@
 <!DOCTYPE html>
-<html lang="si">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Custom Movie Player</title>
-    <style>
-        body {
-            background-color: #141414;
-            color: #fff;
-            font-family: sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-        .custom-player {
-            max-width: 750px;
-            width: 100%;
-            position: relative;
-            overflow: hidden;
-            background: #000;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-        }
+<title>STREAM X PLAYER</title>
 
-        .video-screen {
-            width: 100%;
-            display: block;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-        .player-controls {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.9));
-            padding: 15px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
+<style>
 
-        .custom-player:hover .player-controls {
-            opacity: 1;
-        }
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
 
-        .progress-bar {
-            background: rgba(255,255,255,0.2);
-            height: 6px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            border-radius: 3px;
-        }
+body{
+background:#000;
+overflow:hidden;
+}
 
-        .progress-filled {
-            background: #ff0000;
-            height: 100%;
-            width: 0%;
-            border-radius: 3px;
-        }
+.player-container{
+position:relative;
+width:100%;
+height:100vh;
+background:#000;
+display:flex;
+justify-content:center;
+align-items:center;
+}
 
-        .control-buttons {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+video{
+width:100%;
+height:100%;
+object-fit:contain;
+background:#000;
+}
 
-        .left-controls, .right-controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+.top-bar{
+position:absolute;
+top:0;
+left:0;
+right:0;
+padding:20px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+background:linear-gradient(to bottom,rgba(0,0,0,0.8),transparent);
+z-index:10;
+transition:0.3s;
+}
 
-        .control-buttons button {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-        }
+.logo{
+color:#ff0000;
+font-size:28px;
+font-weight:700;
+letter-spacing:2px;
+}
 
-        .volume-slider {
-            width: 70px;
-            cursor: pointer;
-            accent-color: #ff0000;
-        }
-    </style>
+.movie-title{
+color:#fff;
+font-size:16px;
+}
+
+.controls-container{
+position:absolute;
+bottom:0;
+left:0;
+right:0;
+padding:20px;
+background:linear-gradient(to top,rgba(0,0,0,0.95),transparent);
+z-index:10;
+transition:0.3s;
+}
+
+.progress-area{
+width:100%;
+height:5px;
+background:rgba(255,255,255,0.2);
+border-radius:50px;
+cursor:pointer;
+margin-bottom:15px;
+}
+
+.progress-bar{
+width:0%;
+height:100%;
+background:#ff0000;
+border-radius:50px;
+position:relative;
+}
+
+.progress-bar::before{
+content:'';
+position:absolute;
+right:-6px;
+top:50%;
+transform:translateY(-50%);
+width:14px;
+height:14px;
+background:#ff0000;
+border-radius:50%;
+}
+
+.controls{
+display:flex;
+justify-content:space-between;
+align-items:center;
+flex-wrap:wrap;
+gap:15px;
+}
+
+.left-controls,
+.right-controls{
+display:flex;
+align-items:center;
+gap:12px;
+}
+
+.control-btn{
+background:none;
+border:none;
+color:#fff;
+font-size:20px;
+cursor:pointer;
+transition:0.2s;
+}
+
+.control-btn:hover{
+color:#ff0000;
+transform:scale(1.1);
+}
+
+.time{
+color:#fff;
+font-size:14px;
+}
+
+.volume-slider{
+width:100px;
+accent-color:red;
+cursor:pointer;
+}
+
+.center-play{
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+width:90px;
+height:90px;
+border-radius:50%;
+background:rgba(255,0,0,0.8);
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:35px;
+color:#fff;
+cursor:pointer;
+z-index:15;
+transition:0.3s;
+}
+
+.center-play:hover{
+transform:translate(-50%,-50%) scale(1.1);
+}
+
+.settings-menu{
+position:absolute;
+bottom:90px;
+right:20px;
+background:#111;
+border-radius:10px;
+padding:10px;
+display:none;
+flex-direction:column;
+gap:10px;
+z-index:20;
+min-width:180px;
+}
+
+.settings-menu button{
+background:#1f1f1f;
+border:none;
+color:#fff;
+padding:10px;
+border-radius:8px;
+cursor:pointer;
+text-align:left;
+}
+
+.settings-menu button:hover{
+background:#ff0000;
+}
+
+.subtitle-btn.active{
+color:#ff0000;
+}
+
+.lock-screen{
+position:absolute;
+top:50%;
+left:20px;
+transform:translateY(-50%);
+background:rgba(0,0,0,0.7);
+padding:12px;
+border-radius:50%;
+color:#fff;
+cursor:pointer;
+display:none;
+z-index:30;
+}
+
+.loading{
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+border:5px solid rgba(255,255,255,0.2);
+border-top:5px solid red;
+border-radius:50%;
+width:60px;
+height:60px;
+animation:spin 1s linear infinite;
+display:none;
+z-index:20;
+}
+
+@keyframes spin{
+100%{
+transform:translate(-50%,-50%) rotate(360deg);
+}
+}
+
+.mobile-controls{
+display:none;
+}
+
+@media(max-width:768px){
+
+.controls{
+flex-direction:column;
+align-items:flex-start;
+}
+
+.volume-slider{
+width:80px;
+}
+
+.logo{
+font-size:22px;
+}
+
+.center-play{
+width:75px;
+height:75px;
+font-size:28px;
+}
+
+}
+
+.hide-controls{
+opacity:0;
+pointer-events:none;
+}
+
+</style>
 </head>
+
 <body>
 
-    <div class="custom-player" id="myPlayer">
-        <!-- මෙතනට මම හැමදාම වැඩ කරන sample වීඩියෝ ලින්ක් එකක් දැම්මා ටෙස්ට් කරන්න -->
-        <video class="video-screen" src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" crossorigin="anonymous">
-        </video>
-        
-        <div class="player-controls">
-            <div class="progress-bar">
-                <div class="progress-filled"></div>
-            </div>
-            
-            <div class="control-buttons">
-                <div class="left-controls">
-                    <button class="play-btn">▶</button>
-                    <button class="skip-btn" data-skip="-10">⏪ 10s</button>
-                    <button class="skip-btn" data-skip="10">10s ⏩</button>
-                    <input type="range" class="volume-slider" min="0" max="1" step="0.05" value="1">
-                </div>
-                
-                <div class="right-controls">
-                    <button class="fullscreen-btn">⛶</button>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="player-container" id="playerContainer">
 
-    <script>
-        const player = document.getElementById('myPlayer');
-        const video = player.querySelector('.video-screen');
-        const playBtn = player.querySelector('.play-btn');
-        const progressBar = player.querySelector('.progress-bar');
-        const progressFilled = player.querySelector('.progress-filled');
-        const volumeSlider = player.querySelector('.volume-slider');
-        const fullscreenBtn = player.querySelector('.fullscreen-btn');
-        const skipButtons = player.querySelectorAll('[data-skip]');
+<div class="top-bar" id="topBar">
+<div class="logo">STREAM X</div>
+<div class="movie-title">Movie Name (2026)</div>
+</div>
 
-        function togglePlay() {
-            if (video.paused) {
-                video.play();
-                playBtn.textContent = '❚❚';
-            } else {
-                video.pause();
-                playBtn.textContent = '▶';
-            }
-        }
+<video id="video">
 
-        function handleProgress() {
-            const percent = (video.currentTime / video.duration) * 100;
-            progressFilled.style.width = `${percent}%`;
-        }
+<source src="YOUR_MOVIE_LINK.mp4" type="video/mp4">
 
-        function scrub(e) {
-            const scrubTime = (e.offsetX / progressBar.offsetWidth) * video.duration;
-            video.currentTime = scrubTime;
-        }
+<track
+id="subtitleTrack"
+src="YOUR_SUBTITLE.vtt"
+kind="subtitles"
+srclang="en"
+label="English"
+default>
 
-        function skip() {
-            video.currentTime += parseFloat(this.dataset.skip);
-        }
+</video>
 
-        // Double Tap
-        let lastTap = 0;
-        video.addEventListener('touchstart', function (e) {
-            const currentTime = new Date().getTime();
-            const tapLength = currentTime - lastTap;
-            if (tapLength < 300 && tapLength > 0) {
-                const rect = video.getBoundingClientRect();
-                const x = e.touches[0].clientX - rect.left;
-                if (x > rect.width / 2) {
-                    video.currentTime += 10;
-                } else {
-                    video.currentTime -= 10;
-                }
-            }
-            lastTap = currentTime;
-        });
+<div class="loading" id="loading"></div>
 
-        // Keyboard Shortcuts
-        window.addEventListener('keydown', function(e) {
-            if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
-            else if (e.code === 'ArrowRight') { video.currentTime += 10; }
-            else if (e.code === 'ArrowLeft') { video.currentTime -= 10; }
-        });
+<div class="center-play" id="centerPlay">▶</div>
 
-        // Right Click Disable
-        player.addEventListener('contextmenu', e => e.preventDefault());
+<div class="lock-screen" id="lockBtn">🔒</div>
 
-        // Fullscreen
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                player.requestFullscreen().catch(err => console.log(err));
-            } else {
-                document.exitFullscreen();
-            }
-        }
+<div class="controls-container" id="controlsContainer">
 
-        video.addEventListener('click', togglePlay);
-        playBtn.addEventListener('click', togglePlay);
-        video.addEventListener('timeupdate', handleProgress);
-        volumeSlider.addEventListener('input', (e) => video.volume = e.target.value);
-        fullscreenBtn.addEventListener('click', toggleFullscreen);
-        skipButtons.forEach(button => button.addEventListener('click', skip));
+<div class="progress-area" id="progressArea">
+<div class="progress-bar" id="progressBar"></div>
+</div>
 
-        let mousedown = false;
-        progressBar.addEventListener('click', scrub);
-        progressBar.addEventListener('mousemove', (e) => mousedown && scrub(e));
-        progressBar.addEventListener('mousedown', () => mousedown = true);
-        progressBar.addEventListener('mouseup', () => mousedown = false);
-    </script>
+<div class="controls">
+
+<div class="left-controls">
+
+<button class="control-btn" id="playPause">▶</button>
+
+<button class="control-btn" id="rewind">⏪</button>
+
+<button class="control-btn" id="forward">⏩</button>
+
+<span class="time" id="current">00:00</span>
+
+<span class="time">/</span>
+
+<span class="time" id="duration">00:00</span>
+
+</div>
+
+<div class="right-controls">
+
+<input type="range" min="0" max="1" step="0.01"
+value="1"
+class="volume-slider"
+id="volume">
+
+<button class="control-btn subtitle-btn" id="subtitleBtn">CC</button>
+
+<button class="control-btn" id="pipBtn">⧉</button>
+
+<button class="control-btn" id="settingsBtn">⚙</button>
+
+<button class="control-btn" id="fullscreenBtn">⛶</button>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="settings-menu" id="settingsMenu">
+
+<button onclick="setPlaybackSpeed(0.5)">0.5x Speed</button>
+<button onclick="setPlaybackSpeed(1)">1x Normal</button>
+<button onclick="setPlaybackSpeed(1.5)">1.5x Speed</button>
+<button onclick="setPlaybackSpeed(2)">2x Speed</button>
+
+</div>
+
+</div>
+
+<script>
+
+const video = document.getElementById('video');
+const playPause = document.getElementById('playPause');
+const centerPlay = document.getElementById('centerPlay');
+const progressBar = document.getElementById('progressBar');
+const progressArea = document.getElementById('progressArea');
+const current = document.getElementById('current');
+const duration = document.getElementById('duration');
+const volume = document.getElementById('volume');
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+const rewind = document.getElementById('rewind');
+const forward = document.getElementById('forward');
+const subtitleBtn = document.getElementById('subtitleBtn');
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsMenu = document.getElementById('settingsMenu');
+const controlsContainer = document.getElementById('controlsContainer');
+const topBar = document.getElementById('topBar');
+const loading = document.getElementById('loading');
+const pipBtn = document.getElementById('pipBtn');
+
+let controlsTimeout;
+
+function togglePlay(){
+
+if(video.paused){
+video.play();
+playPause.innerHTML='⏸';
+centerPlay.style.display='none';
+}else{
+video.pause();
+playPause.innerHTML='▶';
+centerPlay.style.display='flex';
+}
+
+}
+
+playPause.addEventListener('click',togglePlay);
+centerPlay.addEventListener('click',togglePlay);
+
+video.addEventListener('timeupdate',()=>{
+
+const percent=(video.currentTime/video.duration)*100;
+progressBar.style.width=`${percent}%`;
+
+current.innerHTML=formatTime(video.currentTime);
+
+});
+
+video.addEventListener('loadedmetadata',()=>{
+
+duration.innerHTML=formatTime(video.duration);
+
+});
+
+function formatTime(time){
+
+let mins=Math.floor(time/60);
+let secs=Math.floor(time%60);
+
+if(secs<10) secs='0'+secs;
+
+return `${mins}:${secs}`;
+
+}
+
+progressArea.addEventListener('click',(e)=>{
+
+const width=progressArea.clientWidth;
+const clickX=e.offsetX;
+
+video.currentTime=(clickX/width)*video.duration;
+
+});
+
+volume.addEventListener('input',()=>{
+
+video.volume=volume.value;
+
+});
+
+fullscreenBtn.addEventListener('click',()=>{
+
+if(!document.fullscreenElement){
+playerContainer.requestFullscreen();
+}else{
+document.exitFullscreen();
+}
+
+});
+
+rewind.addEventListener('click',()=>{
+
+video.currentTime-=10;
+
+});
+
+forward.addEventListener('click',()=>{
+
+video.currentTime+=10;
+
+});
+
+subtitleBtn.addEventListener('click',()=>{
+
+const track=video.textTracks[0];
+
+if(track.mode==="showing"){
+track.mode="hidden";
+subtitleBtn.classList.remove('active');
+}else{
+track.mode="showing";
+subtitleBtn.classList.add('active');
+}
+
+});
+
+settingsBtn.addEventListener('click',()=>{
+
+settingsMenu.style.display=
+settingsMenu.style.display==="flex"
+?"none":"flex";
+
+});
+
+function setPlaybackSpeed(speed){
+
+video.playbackRate=speed;
+settingsMenu.style.display='none';
+
+}
+
+video.addEventListener('waiting',()=>{
+
+loading.style.display='block';
+
+});
+
+video.addEventListener('playing',()=>{
+
+loading.style.display='none';
+
+});
+
+pipBtn.addEventListener('click',async()=>{
+
+if(document.pictureInPictureElement){
+document.exitPictureInPicture();
+}else{
+await video.requestPictureInPicture();
+}
+
+});
+
+function hideControls(){
+
+controlsContainer.classList.add('hide-controls');
+topBar.classList.add('hide-controls');
+
+}
+
+function showControls(){
+
+controlsContainer.classList.remove('hide-controls');
+topBar.classList.remove('hide-controls');
+
+clearTimeout(controlsTimeout);
+
+controlsTimeout=setTimeout(()=>{
+hideControls();
+},3000);
+
+}
+
+playerContainer.addEventListener('mousemove',showControls);
+
+showControls();
+
+document.addEventListener('keydown',(e)=>{
+
+if(e.code==="Space"){
+togglePlay();
+}
+
+if(e.code==="ArrowRight"){
+video.currentTime+=10;
+}
+
+if(e.code==="ArrowLeft"){
+video.currentTime-=10;
+}
+
+});
+
+</script>
+
 </body>
 </html>

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movie World — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--red:#E8192C;--dark:#0a0a0a;--card:#141414;--card2:#1c1c1c;--text:#fff;--muted:#aaa;--border:#2a2a2a;--green:#22c55e;--yellow:#F5C518}
+body{background:var(--dark);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh}
+
+/* LOGIN */
+#loginWrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px 32px;width:100%;max-width:380px}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;text-align:center;margin-bottom:6px}
+.login-logo span{color:var(--red)}
+.login-sub{text-align:center;color:var(--muted);font-size:13px;margin-bottom:32px}
+.login-label{font-size:12px;color:#777;letter-spacing:.5px;margin-bottom:6px;display:block}
+.login-input{width:100%;background:#111;border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:#fff;font-size:15px;font-family:'Barlow',sans-serif;outline:none;margin-bottom:16px}
+.login-input:focus{border-color:var(--red)}
+.login-btn{width:100%;background:var(--red);color:#fff;border:none;border-radius:8px;padding:13px;font-size:16px;font-weight:700;cursor:pointer;font-family:'Barlow',sans-serif;letter-spacing:.5px;margin-top:4px}
+.login-btn:hover{background:#c8111f}
+.login-err{color:#ff6b6b;font-size:13px;text-align:center;margin-top:12px;display:none}
+
+/* ADMIN LAYOUT */
+#adminWrap{display:none}
+.admin-nav{background:var(--card);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:50}
+.admin-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px}
+.admin-logo span{color:var(--red)}
+.admin-badge{background:rgba(232,25,44,.15);border:1px solid rgba(232,25,44,.3);color:var(--red);font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;letter-spacing:1px}
+.logout-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-family:'Barlow',sans-serif}
+.logout-btn:hover{border-color:#555;color:#fff}
+
+/* TABS */
+.admin-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 20px;background:var(--card2)}
+.tab-btn{padding:14px 20px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.tab-btn.active{color:#fff;border-color:var(--red)}
+
+/* PANELS */
+.panel{display:none;padding:24px 20px}
+.panel.active{display:block}
+
+/* ADD MOVIE FORM */
+.form-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:24px}
+.form-card h3{font-size:16px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.tmdb-search-row{display:flex;gap:10px;margin-bottom:20px}
+.tmdb-input{flex:1;background:#111;border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:#fff;font-size:14px;font-family:'Barlow',sans-serif;outline:none}
+.tmdb-input:focus{border-color:#01b4e4}
+.tmdb-btn{background:#01b4e4;color:#000;border:none;border-radius:8px;padding:11px 20px;font-weight:700;font-size:14px;cursor:pointer;font-family:'Barlow',sans-serif;white-space:nowrap}
+.tmdb-results{background:#111;border:1px solid var(--border);border-radius:8px;margin-bottom:16px;max-height:280px;overflow-y:auto;display:none}
+.tmdb-result-item{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;border-bottom:1px solid #1a1a1a;transition:background .15s}
+.tmdb-result-item:hover{background:rgba(255,255,255,.05)}
+.tmdb-result-item:last-child{border-bottom:none}
+.tmdb-thumb{width:40px;height:58px;object-fit:cover;border-radius:4px;background:#222;flex-shrink:0}
+.tmdb-item-title{font-size:14px;font-weight:600}
+.tmdb-item-year{font-size:12px;color:var(--muted)}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:11px;color:#777;letter-spacing:.5px;text-transform:uppercase}
+.form-input{background:#111;border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:#fff;font-size:14px;font-family:'Barlow',sans-serif;outline:none}
+.form-input:focus{border-color:var(--red)}
+.form-textarea{background:#111;border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:#fff;font-size:14px;font-family:'Barlow',sans-serif;outline:none;resize:vertical;min-height:80px}
+.form-select{background:#111;border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:#fff;font-size:14px;font-family:'Barlow',sans-serif;outline:none;-webkit-appearance:none}
+.poster-preview{width:80px;height:115px;object-fit:cover;border-radius:6px;border:1px solid var(--border);margin-top:6px;display:none}
+
+.submit-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btn-submit{background:var(--red);color:#fff;border:none;border-radius:8px;padding:12px 28px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Barlow',sans-serif}
+.btn-reset{background:var(--card2);color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:12px 20px;font-size:15px;font-weight:600;cursor:pointer;font-family:'Barlow',sans-serif}
+.success-msg{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--green);padding:10px 16px;border-radius:8px;font-size:14px;display:none;margin-top:12px}
+.error-msg{background:rgba(232,25,44,.1);border:1px solid rgba(232,25,44,.3);color:#ff6b6b;padding:10px 16px;border-radius:8px;font-size:14px;display:none;margin-top:12px}
+
+/* MOVIE LIST TABLE */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;color:var(--red)}
+.stat-lbl{font-size:12px;color:var(--muted)}
+
+.movie-table{width:100%;border-collapse:collapse}
+.movie-table th{text-align:left;font-size:11px;color:#666;letter-spacing:1px;text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--border)}
+.movie-table td{padding:12px;border-bottom:1px solid #1a1a1a;font-size:13px;vertical-align:middle}
+.movie-table tr:hover td{background:rgba(255,255,255,.02)}
+.table-poster{width:36px;height:52px;object-fit:cover;border-radius:4px;background:#222}
+.table-title{font-weight:600;font-size:14px;margin-bottom:2px}
+.table-meta{font-size:12px;color:var(--muted)}
+.btn-edit{background:rgba(245,197,24,.1);border:1px solid rgba(245,197,24,.3);color:var(--yellow);padding:5px 12px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Barlow',sans-serif}
+.btn-del{background:rgba(232,25,44,.1);border:1px solid rgba(232,25,44,.3);color:var(--red);padding:5px 12px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Barlow',sans-serif;margin-left:6px}
+.loading-row{text-align:center;padding:40px;color:var(--muted);font-size:14px}
+.empty-row{text-align:center;padding:40px;color:var(--muted);font-size:14px}
+
+/* GENRE TAGS */
+.genre-tag-sm{background:rgba(255,255,255,.06);border:1px solid var(--border);padding:2px 8px;border-radius:3px;font-size:11px;margin-right:4px;display:inline-block}
+
+/* LOADING SPINNER */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.tmdb-loading{text-align:center;padding:20px;color:var(--muted);font-size:13px;display:none}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginWrap">
+  <div class="login-box">
+    <div class="login-logo">MOVIE <span>WORLD</span></div>
+    <div class="login-sub">Admin Panel</div>
+    <label class="login-label">PASSWORD</label>
+    <input class="login-input" type="password" id="pwInput" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">LOGIN</button>
+    <div class="login-err" id="loginErr">❌ Wrong password. Try again.</div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="adminWrap">
+  <div class="admin-nav">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="admin-logo">MOVIE <span>WORLD</span></div>
+      <div class="admin-badge">ADMIN</div>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">Logout</button>
+  </div>
+
+  <div class="admin-tabs">
+    <div class="tab-btn active" onclick="switchTab('add')">➕ Add Movie</div>
+    <div class="tab-btn" onclick="switchTab('list')">🎬 All Movies</div>
+  </div>
+
+  <!-- ADD MOVIE PANEL -->
+  <div class="panel active" id="panelAdd">
+    <div class="form-card">
+      <h3>🔍 TMDB Auto Fill</h3>
+      <div class="tmdb-search-row">
+        <input class="tmdb-input" type="text" id="tmdbSearch" placeholder="Movie name type කරන්න... (e.g. Inception)" onkeydown="if(event.key==='Enter')searchTMDB()">
+        <button class="tmdb-btn" onclick="searchTMDB()">Search TMDB</button>
+      </div>
+      <div class="tmdb-loading" id="tmdbLoading"><span class="spinner"></span> TMDB search කරනවා...</div>
+      <div class="tmdb-results" id="tmdbResults"></div>
+    </div>
+
+    <div class="form-card">
+      <h3>🎬 Movie Details</h3>
+      <div style="display:flex;gap:16px;margin-bottom:20px;align-items:flex-start">
+        <div style="flex:1">
+          <img id="posterPreview" class="poster-preview" src="" alt="Poster">
+        </div>
+        <div style="flex:1" id="posterUrlWrap">
+          <div class="form-group">
+            <label class="form-label">Poster URL</label>
+            <input class="form-input" type="text" id="fPoster" placeholder="https://image.tmdb.org/...">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Title *</label>
+          <input class="form-input" type="text" id="fTitle" placeholder="Movie title">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Year *</label>
+          <input class="form-input" type="number" id="fYear" placeholder="2026">
+        </div>
+        <div class="form-group">
+          <label class="form-label">IMDB Rating</label>
+          <input class="form-input" type="number" step="0.1" id="fRating" placeholder="8.5">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Runtime</label>
+          <input class="form-input" type="text" id="fRuntime" placeholder="120 min">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Director</label>
+          <input class="form-input" type="text" id="fDirector" placeholder="Director name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Language</label>
+          <select class="form-select" id="fLang">
+            <option value="EN">English</option>
+            <option value="HI">Hindi</option>
+            <option value="TA">Tamil</option>
+            <option value="TE">Telugu</option>
+            <option value="KO">Korean</option>
+            <option value="JA">Japanese</option>
+            <option value="ZH">Chinese</option>
+            <option value="ES">Spanish</option>
+            <option value="FR">French</option>
+            <option value="SI">Sinhala</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Country</label>
+          <input class="form-input" type="text" id="fCountry" placeholder="United States">
+        </div>
+        <div class="form-group">
+          <label class="form-label">TMDB ID</label>
+          <input class="form-input" type="text" id="fTmdbId" placeholder="Auto filled">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Genres (comma separated)</label>
+          <input class="form-input" type="text" id="fGenres" placeholder="ACTION, THRILLER, DRAMA">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Description</label>
+          <textarea class="form-textarea" id="fDesc" placeholder="Movie description..."></textarea>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Backdrop URL</label>
+          <input class="form-input" type="text" id="fBackdrop" placeholder="https://image.tmdb.org/... (auto filled)">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">සිංහල උපසිරැසි</label>
+          <select class="form-select" id="fSubtitle">
+            <option value="yes">ඇත (Yes)</option>
+            <option value="no">නැත (No)</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Featured (Hero section)</label>
+          <select class="form-select" id="fFeatured">
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Trending</label>
+          <select class="form-select" id="fTrending">
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="submit-row">
+        <button class="btn-submit" id="submitBtn" onclick="submitMovie()">💾 Save Movie</button>
+        <button class="btn-reset" onclick="resetForm()">Reset</button>
+      </div>
+      <div class="success-msg" id="successMsg">✅ Movie successfully saved to Firebase!</div>
+      <div class="error-msg" id="errorMsg"></div>
+    </div>
+  </div>
+
+  <!-- MOVIE LIST PANEL -->
+  <div class="panel" id="panelList">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Total Movies</div></div>
+      <div class="stat-card"><div class="stat-num" id="statFeatured">0</div><div class="stat-lbl">Featured</div></div>
+      <div class="stat-card"><div class="stat-num" id="statTrending">0</div><div class="stat-lbl">Trending</div></div>
+    </div>
+    <div class="form-card" style="padding:0;overflow:hidden">
+      <div id="movieListWrap">
+        <div class="loading-row"><span class="spinner"></span> Loading movies...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase + App Scripts -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getDatabase, ref, push, set, remove, onValue, update } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCV3gc920x1jGCt8BVawEA8gceJlp3VTlU",
+  authDomain: "gaveesha-edfdb.firebaseapp.com",
+  databaseURL: "https://gaveesha-edfdb-default-rtdb.firebaseio.com",
+  projectId: "gaveesha-edfdb",
+  storageBucket: "gaveesha-edfdb.firebasestorage.app",
+  messagingSenderId: "779308103056",
+  appId: "1:779308103056:web:323dcd5eed6e26dae92f15",
+  measurementId: "G-Y9S6PRZC4C"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const TMDB_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2Mjk3MGIwMjJhMGNmZDM0ZDlhZmEyOGMxMzFiZTk3YiIsIm5iZiI6MTc3OTI5MzQ1Mi4yOTIsInN1YiI6IjZhMGRkZDBjZWYyNGZkN2Y4YmRmNTNmZSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.aSygYNT53J7Il2b0Z6S52nDADRexnLfSy2x2pNbhs4c";
+
+const ADMIN_PW = "dn123";
+let editingKey = null;
+let allMovies = {};
+
+// LOGIN
+window.doLogin = function(){
+  const pw = document.getElementById('pwInput').value;
+  if(pw === ADMIN_PW){
+    document.getElementById('loginWrap').style.display='none';
+    document.getElementById('adminWrap').style.display='block';
+    loadMovieList();
+  } else {
+    document.getElementById('loginErr').style.display='block';
+  }
+};
+
+window.doLogout = function(){
+  document.getElementById('loginWrap').style.display='flex';
+  document.getElementById('adminWrap').style.display='none';
+  document.getElementById('pwInput').value='';
+  document.getElementById('loginErr').style.display='none';
+};
+
+// TABS
+window.switchTab = function(tab){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('active', (tab==='add' && i===0)||(tab==='list' && i===1));
+  });
+  document.getElementById('panelAdd').classList.toggle('active', tab==='add');
+  document.getElementById('panelList').classList.toggle('active', tab==='list');
+  if(tab==='list') loadMovieList();
+};
+
+// TMDB SEARCH
+window.searchTMDB = async function(){
+  const q = document.getElementById('tmdbSearch').value.trim();
+  if(!q) return;
+  const loading = document.getElementById('tmdbLoading');
+  const results = document.getElementById('tmdbResults');
+  loading.style.display='block';
+  results.style.display='none';
+  results.innerHTML='';
+  try{
+    const res = await fetch(`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(q)}&language=en-US&page=1`,{
+      headers:{'Authorization':'Bearer '+TMDB_TOKEN,'Content-Type':'application/json'}
+    });
+    const data = await res.json();
+    loading.style.display='none';
+    if(!data.results || data.results.length===0){
+      results.style.display='block';
+      results.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">No results found</div>';
+      return;
+    }
+    results.style.display='block';
+    results.innerHTML = data.results.slice(0,8).map(m=>`
+      <div class="tmdb-result-item" onclick="fillFromTMDB(${m.id})">
+        <img class="tmdb-thumb" src="${m.poster_path?'https://image.tmdb.org/t/p/w92'+m.poster_path:''}" onerror="this.style.background='#333'" alt="">
+        <div>
+          <div class="tmdb-item-title">${m.title||m.name}</div>
+          <div class="tmdb-item-year">${(m.release_date||'').slice(0,4)} &nbsp;⭐ ${m.vote_average?m.vote_average.toFixed(1):'-'}</div>
+        </div>
+      </div>
+    `).join('');
+  } catch(e){
+    loading.style.display='none';
+    results.style.display='block';
+    results.innerHTML='<div style="padding:20px;text-align:center;color:#ff6b6b;font-size:13px">TMDB error: '+e.message+'</div>';
+  }
+};
+
+// FILL FROM TMDB
+window.fillFromTMDB = async function(id){
+  document.getElementById('tmdbResults').style.display='none';
+  document.getElementById('tmdbLoading').style.display='block';
+  document.getElementById('tmdbLoading').innerHTML='<span class="spinner"></span> Movie details ගන්නවා...';
+  try{
+    const [detailRes, creditsRes] = await Promise.all([
+      fetch(`https://api.themoviedb.org/3/movie/${id}?language=en-US`,{headers:{'Authorization':'Bearer '+TMDB_TOKEN}}),
+      fetch(`https://api.themoviedb.org/3/movie/${id}/credits?language=en-US`,{headers:{'Authorization':'Bearer '+TMDB_TOKEN}})
+    ]);
+    const m = await detailRes.json();
+    const credits = await creditsRes.json();
+
+    document.getElementById('fTitle').value = m.title||'';
+    document.getElementById('fYear').value = (m.release_date||'').slice(0,4);
+    document.getElementById('fRating').value = m.vote_average?m.vote_average.toFixed(1):'';
+    document.getElementById('fRuntime').value = m.runtime ? m.runtime+' min' : '';
+    document.getElementById('fDesc').value = m.overview||'';
+    document.getElementById('fTmdbId').value = m.id||'';
+    document.getElementById('fCountry').value = m.production_countries&&m.production_countries[0]?m.production_countries[0].name:'';
+    document.getElementById('fLang').value = (m.original_language||'en').toUpperCase();
+
+    const genres = (m.genres||[]).map(g=>g.name.toUpperCase()).join(', ');
+    document.getElementById('fGenres').value = genres;
+
+    if(m.poster_path){
+      const url = 'https://image.tmdb.org/t/p/w500'+m.poster_path;
+      document.getElementById('fPoster').value = url;
+      const prev = document.getElementById('posterPreview');
+      prev.src = url;
+      prev.style.display='block';
+    }
+    if(m.backdrop_path){
+      document.getElementById('fBackdrop').value = 'https://image.tmdb.org/t/p/w1280'+m.backdrop_path;
+    }
+
+    const director = (credits.crew||[]).find(c=>c.job==='Director');
+    if(director) document.getElementById('fDirector').value = director.name;
+
+    document.getElementById('tmdbLoading').style.display='none';
+    document.getElementById('tmdbLoading').innerHTML='<span class="spinner"></span> Loading...';
+  } catch(e){
+    document.getElementById('tmdbLoading').style.display='none';
+    alert('Error: '+e.message);
+  }
+};
+
+// SUBMIT MOVIE
+window.submitMovie = async function(){
+  const title = document.getElementById('fTitle').value.trim();
+  const year = document.getElementById('fYear').value.trim();
+  if(!title||!year){
+    showError('Title සහ Year අනිවාර්යයි!');
+    return;
+  }
+  const movie = {
+    title,
+    year: parseInt(year),
+    rating: parseFloat(document.getElementById('fRating').value)||0,
+    runtime: document.getElementById('fRuntime').value,
+    director: document.getElementById('fDirector').value,
+    lang: document.getElementById('fLang').value,
+    country: document.getElementById('fCountry').value,
+    desc: document.getElementById('fDesc').value,
+    genres: document.getElementById('fGenres').value.split(',').map(g=>g.trim()).filter(Boolean),
+    poster: document.getElementById('fPoster').value,
+    backdrop: document.getElementById('fBackdrop').value,
+    tmdbId: document.getElementById('fTmdbId').value,
+    subtitle: document.getElementById('fSubtitle').value,
+    featured: document.getElementById('fFeatured').value,
+    trending: document.getElementById('fTrending').value,
+    addedAt: new Date().toISOString()
+  };
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span> Saving...';
+
+  try{
+    if(editingKey){
+      await update(ref(db,'movies/'+editingKey), movie);
+    } else {
+      await push(ref(db,'movies'), movie);
+    }
+    document.getElementById('successMsg').style.display='block';
+    document.getElementById('errorMsg').style.display='none';
+    setTimeout(()=>{ document.getElementById('successMsg').style.display='none'; },4000);
+    resetForm();
+  } catch(e){
+    showError('Firebase error: '+e.message);
+  }
+  btn.disabled=false;
+  btn.innerHTML='💾 Save Movie';
+};
+
+function showError(msg){
+  const el=document.getElementById('errorMsg');
+  el.textContent='❌ '+msg;
+  el.style.display='block';
+  setTimeout(()=>el.style.display='none',5000);
+}
+
+window.resetForm = function(){
+  ['fTitle','fYear','fRating','fRuntime','fDirector','fCountry','fGenres','fDesc','fPoster','fBackdrop','fTmdbId','tmdbSearch'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  document.getElementById('fLang').value='EN';
+  document.getElementById('fSubtitle').value='yes';
+  document.getElementById('fFeatured').value='no';
+  document.getElementById('fTrending').value='no';
+  document.getElementById('posterPreview').style.display='none';
+  document.getElementById('tmdbResults').style.display='none';
+  editingKey=null;
+  document.getElementById('submitBtn').innerHTML='💾 Save Movie';
+};
+
+// LOAD MOVIE LIST
+function loadMovieList(){
+  const wrap = document.getElementById('movieListWrap');
+  wrap.innerHTML='<div class="loading-row"><span class="spinner"></span> Loading movies from Firebase...</div>';
+  onValue(ref(db,'movies'), snap=>{
+    allMovies={};
+    let featured=0, trending=0;
+    if(snap.exists()){
+      snap.forEach(c=>{ allMovies[c.key]=c.val(); });
+    }
+    const list = Object.entries(allMovies).sort((a,b)=>b[1].addedAt?.localeCompare(a[1].addedAt||'')||0);
+    const total=list.length;
+    list.forEach(([k,m])=>{ if(m.featured==='yes')featured++; if(m.trending==='yes')trending++; });
+    document.getElementById('statTotal').textContent=total;
+    document.getElementById('statFeatured').textContent=featured;
+    document.getElementById('statTrending').textContent=trending;
+
+    if(total===0){
+      wrap.innerHTML='<div class="empty-row">🎬 No movies yet. Add some!</div>';
+      return;
+    }
+    wrap.innerHTML=`<table class="movie-table">
+      <thead><tr>
+        <th style="width:56px">Poster</th>
+        <th>Movie</th>
+        <th>Year</th>
+        <th>Rating</th>
+        <th>Actions</th>
+      </tr></thead>
+      <tbody>${list.map(([k,m])=>`
+        <tr>
+          <td><img class="table-poster" src="${m.poster||''}" onerror="this.style.background='#333';this.src=''" alt=""></td>
+          <td>
+            <div class="table-title">${m.title}</div>
+            <div class="table-meta">${(m.genres||[]).slice(0,2).map(g=>`<span class="genre-tag-sm">${g}</span>`).join('')}</div>
+          </td>
+          <td>${m.year}</td>
+          <td style="color:var(--yellow)">⭐ ${m.rating}</td>
+          <td>
+            <button class="btn-edit" onclick="editMovie('${k}')">Edit</button>
+            <button class="btn-del" onclick="deleteMovie('${k}','${m.title.replace(/'/g,"\\'")}')">Delete</button>
+          </td>
+        </tr>
+      `).join('')}</tbody>
+    </table>`;
+  });
+}
+
+window.editMovie = function(key){
+  const m = allMovies[key];
+  if(!m) return;
+  editingKey=key;
+  switchTab('add');
+  document.getElementById('fTitle').value=m.title||'';
+  document.getElementById('fYear').value=m.year||'';
+  document.getElementById('fRating').value=m.rating||'';
+  document.getElementById('fRuntime').value=m.runtime||'';
+  document.getElementById('fDirector').value=m.director||'';
+  document.getElementById('fLang').value=m.lang||'EN';
+  document.getElementById('fCountry').value=m.country||'';
+  document.getElementById('fDesc').value=m.desc||'';
+  document.getElementById('fGenres').value=(m.genres||[]).join(', ');
+  document.getElementById('fPoster').value=m.poster||'';
+  document.getElementById('fBackdrop').value=m.backdrop||'';
+  document.getElementById('fTmdbId').value=m.tmdbId||'';
+  document.getElementById('fSubtitle').value=m.subtitle||'yes';
+  document.getElementById('fFeatured').value=m.featured||'no';
+  document.getElementById('fTrending').value=m.trending||'no';
+  if(m.poster){ const p=document.getElementById('posterPreview'); p.src=m.poster; p.style.display='block'; }
+  document.getElementById('submitBtn').innerHTML='✏️ Update Movie';
+  window.scrollTo(0,0);
+};
+
+window.deleteMovie = async function(key, title){
+  if(!confirm(`"${title}" delete කරන්නද?`)) return;
+  try{
+    await remove(ref(db,'movies/'+key));
+  } catch(e){ alert('Error: '+e.message); }
+};
+
+// Poster preview on URL input
+document.getElementById('fPoster').addEventListener('input', function(){
+  const p=document.getElementById('posterPreview');
+  if(this.value){ p.src=this.value; p.style.display='block'; }
+  else p.style.display='none';
+});
+</script>
+</body>
+</html>

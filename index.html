@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Subtitle Upload Panel</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    #dropZone {
+      width: 300px;
+      height: 150px;
+      border: 2px dashed #999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Subtitle Upload</h2>
+
+<div id="dropZone">Drag & Drop File Here</div>
+<input type="file" id="fileInput" />
+
+<button onclick="uploadFile()">Upload</button>
+
+<p id="status"></p>
+<p id="link"></p>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCV3gc920x1jGCt8BVawEA8gceJlp3VTlU",
+  authDomain: "gaveesha-edfdb.firebaseapp.com",
+  projectId: "gaveesha-edfdb",
+  storageBucket: "gaveesha-edfdb.appspot.com",
+  messagingSenderId: "779308103056",
+  appId: "1:779308103056:web:323dcd5eed6e26dae92f15"
+};
+
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
+const db = getFirestore(app);
+
+let selectedFile = null;
+
+// file select
+document.getElementById("fileInput").onchange = (e) => {
+  selectedFile = e.target.files[0];
+};
+
+// drag & drop
+const dropZone = document.getElementById("dropZone");
+
+dropZone.ondragover = (e) => {
+  e.preventDefault();
+};
+
+dropZone.ondrop = (e) => {
+  e.preventDefault();
+  selectedFile = e.dataTransfer.files[0];
+  dropZone.innerText = selectedFile.name;
+};
+
+function genId() {
+  return Math.random().toString(36).substring(2, 8);
+}
+
+window.uploadFile = async function () {
+
+  if (!selectedFile) return alert("Select file!");
+
+  const id = genId();
+
+  document.getElementById("status").innerText = "Uploading...";
+
+  const fileRef = ref(storage, "subtitles/" + id + "_" + selectedFile.name);
+
+  await uploadBytes(fileRef, selectedFile);
+
+  const url = await getDownloadURL(fileRef);
+
+  await setDoc(doc(db, "subtitles", id), {
+    id: id,
+    fileName: selectedFile.name,
+    fileUrl: url,
+    createdAt: new Date()
+  });
+
+  const shortLink = `https://cineflix-lk.vercel.app/sub/${id}`;
+
+  document.getElementById("status").innerText = "Done!";
+  document.getElementById("link").innerHTML = `
+    <b>Link:</b><br>
+    <a href="${shortLink}" target="_blank">${shortLink}</a><br><br>
+    <button onclick="navigator.clipboard.writeText('${shortLink}')">
+      Copy Link
+    </button>
+  `;
+};
+</script>
+
+</body>
+</html>

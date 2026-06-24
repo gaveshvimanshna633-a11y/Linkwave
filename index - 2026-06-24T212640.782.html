@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CineFlix · Subtitle Uploader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #111118;
+      --border:    #1e1e2e;
+      --accent:    #7c5cfc;
+      --accent2:   #c084fc;
+      --glow:      rgba(124,92,252,0.18);
+      --text:      #e8e8f0;
+      --muted:     #6b6b80;
+      --success:   #22d3a5;
+      --error:     #f87171;
+      --font:      'Space Grotesk', sans-serif;
+      --mono:      'Space Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 16px 60px;
+    }
+
+    /* ── Header ── */
+    header {
+      width: 100%;
+      max-width: 680px;
+      padding: 40px 0 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-mark {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .logo-text { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+    .logo-text span { color: var(--accent2); }
+
+    /* ── Hero ── */
+    .hero {
+      max-width: 680px;
+      width: 100%;
+      text-align: center;
+      padding: 48px 0 36px;
+    }
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 700;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      background: linear-gradient(120deg, #fff 30%, var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 32px;
+      width: 100%;
+      max-width: 680px;
+    }
+
+    /* ── Drop Zone ── */
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 52px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s, box-shadow .2s;
+      position: relative;
+    }
+    .dropzone:hover, .dropzone.drag-over {
+      border-color: var(--accent);
+      background: var(--glow);
+      box-shadow: 0 0 28px var(--glow);
+    }
+    .dropzone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .drop-icon { font-size: 42px; margin-bottom: 12px; line-height: 1; }
+    .drop-title { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+    .drop-sub { color: var(--muted); font-size: 13px; }
+    .badge {
+      display: inline-block;
+      background: #1a1a2e;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent2);
+      margin: 2px;
+    }
+
+    /* ── File Preview ── */
+    .file-preview {
+      display: none;
+      align-items: center;
+      gap: 14px;
+      background: #0f0f1a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-top: 16px;
+    }
+    .file-preview.show { display: flex; }
+    .file-icon { font-size: 24px; }
+    .file-info { flex: 1; min-width: 0; }
+    .file-name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-size { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .file-remove {
+      background: none; border: none; color: var(--muted);
+      cursor: pointer; font-size: 18px; padding: 4px; transition: color .15s;
+    }
+    .file-remove:hover { color: var(--error); }
+
+    /* ── Metadata ── */
+    .meta-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    @media (max-width: 480px) { .meta-row { grid-template-columns: 1fr; } }
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+    input[type="text"], select {
+      width: 100%;
+      background: #0f0f1a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input[type="text"]:focus, select:focus { border-color: var(--accent); }
+    select option { background: #111118; }
+
+    /* ── Upload Button ── */
+    .btn-upload {
+      margin-top: 24px;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s;
+      letter-spacing: 0.2px;
+    }
+    .btn-upload:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); }
+    .btn-upload:active { transform: translateY(0); }
+    .btn-upload:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── Progress ── */
+    .progress-wrap {
+      display: none;
+      margin-top: 20px;
+    }
+    .progress-wrap.show { display: block; }
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: var(--muted); margin-bottom: 8px;
+    }
+    .progress-bar-bg {
+      height: 6px; background: var(--border); border-radius: 99px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px;
+      width: 0%;
+      transition: width .3s;
+    }
+
+    /* ── Result Card ── */
+    .result-card {
+      display: none;
+      margin-top: 24px;
+      background: #0d1a14;
+      border: 1px solid #1e3a2a;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .result-card.show { display: block; }
+    .result-title {
+      display: flex; align-items: center; gap: 8px;
+      font-weight: 600; font-size: 14px; color: var(--success);
+      margin-bottom: 12px;
+    }
+    .link-box {
+      display: flex; align-items: center; gap: 10px;
+      background: #0a0f0c; border: 1px solid #1e3a2a;
+      border-radius: 8px; padding: 10px 14px;
+    }
+    .short-link {
+      flex: 1; min-width: 0;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--accent2);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .btn-copy {
+      background: var(--accent);
+      border: none;
+      border-radius: 6px;
+      padding: 7px 14px;
+      color: #fff;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s;
+      flex-shrink: 0;
+    }
+    .btn-copy:hover { opacity: .85; }
+    .btn-copy.copied { background: var(--success); color: #0a0a0f; }
+
+    /* ── Error ── */
+    .error-msg {
+      display: none; margin-top: 16px;
+      background: #1a0f0f; border: 1px solid #3a1e1e;
+      border-radius: 8px; padding: 12px 16px;
+      color: var(--error); font-size: 13px;
+    }
+    .error-msg.show { display: block; }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 40px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">🎬</div>
+  <div class="logo-text">Cine<span>Flix</span></div>
+</header>
+
+<section class="hero">
+  <h1>Subtitle Short Links</h1>
+  <p>Upload an .srt or .ass subtitle file — get a short, shareable link instantly.</p>
+</section>
+
+<div class="card">
+
+  <!-- Drop Zone -->
+  <div class="dropzone" id="dropzone">
+    <input type="file" id="fileInput" accept=".srt,.ass" />
+    <div class="drop-icon">📄</div>
+    <div class="drop-title">Drop your subtitle file here</div>
+    <div class="drop-sub" style="margin-bottom:10px">or click to browse</div>
+    <span class="badge">.srt</span><span class="badge">.ass</span>
+  </div>
+
+  <!-- File Preview -->
+  <div class="file-preview" id="filePreview">
+    <div class="file-icon">🗂️</div>
+    <div class="file-info">
+      <div class="file-name" id="fileName">—</div>
+      <div class="file-size" id="fileSize">—</div>
+    </div>
+    <button class="file-remove" id="fileRemove" title="Remove">✕</button>
+  </div>
+
+  <!-- Metadata -->
+  <div class="meta-row">
+    <div>
+      <label for="movieTitle">Movie / Show title (optional)</label>
+      <input type="text" id="movieTitle" placeholder="e.g. Inception" />
+    </div>
+    <div>
+      <label for="language">Language (optional)</label>
+      <select id="language">
+        <option value="">— Select —</option>
+        <option value="Sinhala">Sinhala</option>
+        <option value="Tamil">Tamil</option>
+        <option value="English">English</option>
+        <option value="Hindi">Hindi</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Upload Button -->
+  <button class="btn-upload" id="uploadBtn" disabled>Upload & Generate Link</button>
+
+  <!-- Progress -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-label">
+      <span id="progressStatus">Uploading…</span>
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="result-card" id="resultCard">
+    <div class="result-title">✅ Link ready!</div>
+    <div class="link-box">
+      <div class="short-link" id="shortLinkDisplay">—</div>
+      <button class="btn-copy" id="copyBtn">Copy</button>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-msg" id="errorMsg"></div>
+
+</div>
+
+<footer>© 2025 CineFlix LK · Subtitle hosting made simple</footer>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+  import { getFirestore, doc, setDoc, getDoc }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // ── Firebase init ──
+  const firebaseConfig = {
+    apiKey:            "AIzaSyCV3gc920x1jGCt8BVawEA8gceJlp3VTlU",
+    authDomain:        "gaveesha-edfdb.firebaseapp.com",
+    databaseURL:       "https://gaveesha-edfdb-default-rtdb.firebaseio.com",
+    projectId:         "gaveesha-edfdb",
+    storageBucket:     "gaveesha-edfdb.firebasestorage.app",
+    messagingSenderId: "779308103056",
+    appId:             "1:779308103056:web:323dcd5eed6e26dae92f15",
+    measurementId:     "G-Y9S6PRZC4C"
+  };
+
+  const app     = initializeApp(firebaseConfig);
+  const storage = getStorage(app);
+  const db      = getFirestore(app);
+
+  // ── Helpers ──
+  const $ = id => document.getElementById(id);
+
+  function genId(len = 6) {
+    const chars = 'abcdefghijkmnpqrstuvwxyz23456789';
+    let id = '';
+    for (let i = 0; i < len; i++) id += chars[Math.floor(Math.random() * chars.length)];
+    return id;
+  }
+
+  function fmtSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+  }
+
+  function showError(msg) {
+    const el = $('errorMsg');
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+  function hideError() { $('errorMsg').classList.remove('show'); }
+
+  // ── File selection ──
+  let selectedFile = null;
+
+  function handleFile(file) {
+    hideError();
+    $('resultCard').classList.remove('show');
+    $('progressWrap').classList.remove('show');
+
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['srt','ass'].includes(ext)) {
+      showError('Only .srt and .ass files are accepted.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      showError('File too large (max 10 MB).');
+      return;
+    }
+    selectedFile = file;
+    $('fileName').textContent = file.name;
+    $('fileSize').textContent = fmtSize(file.size);
+    $('filePreview').classList.add('show');
+    $('uploadBtn').disabled = false;
+  }
+
+  const dropzone  = $('dropzone');
+  const fileInput = $('fileInput');
+
+  fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
+  dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+  dropzone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropzone.classList.remove('drag-over');
+    handleFile(e.dataTransfer.files[0]);
+  });
+
+  $('fileRemove').addEventListener('click', () => {
+    selectedFile = null;
+    fileInput.value = '';
+    $('filePreview').classList.remove('show');
+    $('uploadBtn').disabled = true;
+    hideError();
+    $('resultCard').classList.remove('show');
+    $('progressWrap').classList.remove('show');
+  });
+
+  // ── Upload ──
+  $('uploadBtn').addEventListener('click', async () => {
+    if (!selectedFile) return;
+    hideError();
+    $('resultCard').classList.remove('show');
+
+    const btn = $('uploadBtn');
+    btn.disabled = true;
+    btn.textContent = 'Uploading…';
+
+    $('progressWrap').classList.add('show');
+    $('progressFill').style.width = '0%';
+    $('progressPct').textContent = '0%';
+    $('progressStatus').textContent = 'Uploading file…';
+
+    try {
+      // Generate unique short ID (ensure it's not already taken)
+      let shortId;
+      let attempts = 0;
+      do {
+        shortId = genId(6);
+        const snap = await getDoc(doc(db, 'subtitles', shortId));
+        if (!snap.exists()) break;
+        attempts++;
+      } while (attempts < 5);
+
+      const ext      = selectedFile.name.split('.').pop().toLowerCase();
+      const path     = `subtitles/${shortId}.${ext}`;
+      const sRef     = storageRef(storage, path);
+      const upload   = uploadBytesResumable(sRef, selectedFile);
+
+      upload.on('state_changed',
+        snap => {
+          const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+          $('progressFill').style.width = pct + '%';
+          $('progressPct').textContent  = pct + '%';
+        },
+        err => {
+          showError('Upload failed: ' + err.message);
+          btn.disabled = false;
+          btn.textContent = 'Upload & Generate Link';
+          $('progressWrap').classList.remove('show');
+        },
+        async () => {
+          $('progressStatus').textContent = 'Saving metadata…';
+          $('progressFill').style.width = '100%';
+          $('progressPct').textContent  = '100%';
+
+          const downloadURL = await getDownloadURL(upload.snapshot.ref);
+
+          await setDoc(doc(db, 'subtitles', shortId), {
+            shortId,
+            fileName:    selectedFile.name,
+            fileSize:    selectedFile.size,
+            fileType:    ext,
+            downloadURL,
+            movieTitle:  $('movieTitle').value.trim() || null,
+            language:    $('language').value || null,
+            createdAt:   new Date().toISOString(),
+          });
+
+          const shortLink = `https://cineflix-lk.vercel.app/sub/${shortId}`;
+          $('shortLinkDisplay').textContent = shortLink;
+          $('shortLinkDisplay').dataset.url = shortLink;
+          $('resultCard').classList.add('show');
+
+          btn.textContent = 'Upload & Generate Link';
+          btn.disabled    = false;
+          $('progressStatus').textContent = 'Done!';
+
+          setTimeout(() => $('progressWrap').classList.remove('show'), 1500);
+        }
+      );
+    } catch (err) {
+      showError('Something went wrong: ' + err.message);
+      btn.disabled = false;
+      btn.textContent = 'Upload & Generate Link';
+      $('progressWrap').classList.remove('show');
+    }
+  });
+
+  // ── Copy button ──
+  $('copyBtn').addEventListener('click', async () => {
+    const url = $('shortLinkDisplay').dataset.url || $('shortLinkDisplay').textContent;
+    try {
+      await navigator.clipboard.writeText(url);
+      const btn = $('copyBtn');
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    } catch {
+      showError('Could not copy. Please copy manually.');
+    }
+  });
+
+  // ── Redirect handler (run if path is /sub/:id) ──
+  async function handleRedirect() {
+    const match = location.pathname.match(/^\/sub\/([a-z0-9]{4,12})$/i);
+    if (!match) return;
+    const shortId = match[1];
+    document.body.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+        min-height:100vh;font-family:'Space Grotesk',sans-serif;color:#e8e8f0;gap:16px;text-align:center;padding:24px">
+        <div style="font-size:36px">🎬</div>
+        <div style="font-size:18px;font-weight:600">Looking up subtitle…</div>
+        <div style="color:#6b6b80;font-size:14px">Short ID: <code style="color:#c084fc">${shortId}</code></div>
+      </div>`;
+    try {
+      const snap = await getDoc(doc(db, 'subtitles', shortId));
+      if (!snap.exists()) {
+        document.body.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+          min-height:100vh;font-family:sans-serif;color:#f87171;font-size:18px">Link not found.</div>`;
+        return;
+      }
+      window.location.href = snap.data().downloadURL;
+    } catch (e) {
+      document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;
+        min-height:100vh;font-family:sans-serif;color:#f87171">${e.message}</div>`;
+    }
+  }
+
+  handleRedirect();
+</script>
+</body>
+</html>

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Player</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0d0d;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 20px;
+  }
+
+  #app {
+    width: 100%;
+    max-width: 900px;
+  }
+
+  #player-wrap {
+    background: #000;
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+  }
+
+  video {
+    width: 100%;
+    display: none;
+    background: #000;
+    max-height: 520px;
+    object-fit: contain;
+  }
+
+  video::cue {
+    background: rgba(0,0,0,0.78);
+    color: #fff;
+    font-size: 1.05rem;
+    font-family: inherit;
+    border-radius: 3px;
+    padding: 2px 8px;
+  }
+
+  /* Drop overlay */
+  #drop-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    min-height: 320px;
+    cursor: pointer;
+    transition: background 0.2s;
+    background: #111;
+  }
+  #drop-overlay:hover, #drop-overlay.drag-over {
+    background: #161616;
+  }
+  #drop-overlay .big-icon {
+    font-size: 56px;
+    color: #333;
+    line-height: 1;
+  }
+  #drop-overlay h2 {
+    color: #ccc;
+    font-size: 16px;
+    font-weight: 500;
+  }
+  #drop-overlay p {
+    color: #555;
+    font-size: 13px;
+  }
+  #drop-overlay .browse-btn {
+    margin-top: 4px;
+    padding: 8px 22px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    color: #ccc;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  #drop-overlay .browse-btn:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.3);
+  }
+
+  /* Controls */
+  #controls {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 10px 14px 12px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.9));
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  #player-wrap:hover #controls,
+  #player-wrap.paused #controls { opacity: 1; }
+
+  /* Progress */
+  #progress-wrap {
+    position: relative;
+    height: 4px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: height 0.15s;
+  }
+  #progress-wrap:hover { height: 6px; }
+  #progress-fill {
+    height: 100%;
+    background: #fff;
+    border-radius: 2px;
+    pointer-events: none;
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+
+  /* Buttons row */
+  #btn-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .ctrl-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    transition: background 0.15s;
+    font-size: 20px;
+    line-height: 1;
+  }
+  .ctrl-btn:hover { background: rgba(255,255,255,0.14); }
+  .ctrl-btn:active { transform: scale(0.94); }
+
+  .skip-label {
+    font-size: 9px;
+    color: rgba(255,255,255,0.7);
+    text-align: center;
+    line-height: 1;
+    margin-top: 2px;
+    pointer-events: none;
+  }
+
+  .skip-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+  }
+  .skip-wrap .ctrl-btn { padding: 3px 5px; }
+
+  #time-display {
+    color: rgba(255,255,255,0.85);
+    font-size: 12px;
+    margin-left: 2px;
+    white-space: nowrap;
+    min-width: 96px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .spacer { flex: 1; }
+
+  /* Volume */
+  #vol-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #vol-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 70px;
+    height: 3px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  #vol-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 13px; height: 13px;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  #vol-slider::-moz-range-thumb {
+    width: 13px; height: 13px;
+    background: #fff;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+  }
+
+  /* CC badge button */
+  #cc-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1.5px solid rgba(255,255,255,0.45);
+    color: #fff;
+    cursor: pointer;
+    background: none;
+    transition: background 0.15s, border-color 0.15s;
+    letter-spacing: 0.03em;
+  }
+  #cc-badge:hover { background: rgba(255,255,255,0.1); }
+  #cc-badge.active {
+    background: rgba(255,255,255,0.22);
+    border-color: #fff;
+  }
+
+  #cc-file-input, #vid-file-input { display: none; }
+
+  /* CC Panel */
+  #cc-panel {
+    display: none;
+    position: absolute;
+    bottom: 78px;
+    right: 14px;
+    background: rgba(16,16,16,0.97);
+    border: 0.5px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 14px;
+    min-width: 230px;
+    color: #fff;
+    font-size: 13px;
+    z-index: 20;
+    backdrop-filter: blur(8px);
+  }
+  #cc-panel.open { display: block; }
+  #cc-panel .panel-label {
+    display: block;
+    margin-bottom: 10px;
+    color: #888;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+  #cc-upload-btn {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.07);
+    border: 0.5px solid rgba(255,255,255,0.18);
+    border-radius: 7px;
+    color: #e0e0e0;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: background 0.15s;
+  }
+  #cc-upload-btn:hover { background: rgba(255,255,255,0.13); }
+  #cc-status {
+    margin-top: 9px;
+    font-size: 11px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  #cc-status.ok { color: #5DCAA5; }
+  #cc-status.err { color: #F0997B; }
+
+  /* Fullscreen */
+  #player-wrap:-webkit-full-screen { max-width: 100%; border-radius: 0; }
+  #player-wrap:-webkit-full-screen video { max-height: 100vh; }
+  #player-wrap:fullscreen { max-width: 100%; border-radius: 0; }
+  #player-wrap:fullscreen video { max-height: 100vh; }
+
+  @media (max-width: 480px) {
+    #vol-slider { width: 48px; }
+    #time-display { min-width: 80px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="player-wrap" class="paused">
+    <div id="drop-overlay">
+      <i class="ti ti-device-tv big-icon" aria-hidden="true"></i>
+      <h2>Video file එකක් drop කරන්න</h2>
+      <p>MP4, WebM, MOV — supported</p>
+      <button class="browse-btn">
+        <i class="ti ti-folder-open" style="font-size:15px" aria-hidden="true"></i>
+        Browse files
+      </button>
+      <input type="file" id="vid-file-input" accept="video/*">
+    </div>
+
+    <video id="vid" preload="metadata"></video>
+
+    <div id="controls">
+      <div id="progress-wrap" role="slider" aria-label="Seek">
+        <div id="progress-fill"></div>
+      </div>
+
+      <div id="btn-row">
+        <!-- Skip back -->
+        <div class="skip-wrap" id="skip-back-wrap" title="10s back" tabindex="0" role="button" aria-label="Skip back 10 seconds">
+          <button class="ctrl-btn" tabindex="-1">
+            <i class="ti ti-rotate-clockwise-2" style="transform:scaleX(-1)"></i>
+          </button>
+          <span class="skip-label">10s</span>
+        </div>
+
+        <!-- Play/pause -->
+        <button class="ctrl-btn" id="btn-play" aria-label="Play / Pause" style="font-size:22px">
+          <i class="ti ti-player-play" id="play-icon"></i>
+        </button>
+
+        <!-- Skip forward -->
+        <div class="skip-wrap" id="skip-fwd-wrap" title="10s forward" tabindex="0" role="button" aria-label="Skip forward 10 seconds">
+          <button class="ctrl-btn" tabindex="-1">
+            <i class="ti ti-rotate-clockwise-2"></i>
+          </button>
+          <span class="skip-label">10s</span>
+        </div>
+
+        <span id="time-display">0:00 / 0:00</span>
+
+        <div class="spacer"></div>
+
+        <!-- Volume -->
+        <div id="vol-wrap">
+          <button class="ctrl-btn" id="btn-mute" aria-label="Mute / Unmute">
+            <i class="ti ti-volume" id="vol-icon"></i>
+          </button>
+          <input type="range" id="vol-slider" min="0" max="1" step="0.02" value="1" aria-label="Volume">
+        </div>
+
+        <!-- CC -->
+        <button id="cc-badge" aria-label="Subtitles / CC">CC</button>
+
+        <!-- Fullscreen -->
+        <button class="ctrl-btn" id="btn-fs" aria-label="Toggle fullscreen">
+          <i class="ti ti-maximize" id="fs-icon"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- CC Panel -->
+    <div id="cc-panel" role="dialog" aria-label="Subtitle settings">
+      <span class="panel-label">Subtitles / CC</span>
+      <button id="cc-upload-btn">
+        <i class="ti ti-upload" style="font-size:14px" aria-hidden="true"></i>
+        .vtt හෝ .srt file load කරන්න
+      </button>
+      <input type="file" id="cc-file-input" accept=".vtt,.srt">
+      <div id="cc-status">
+        <i class="ti ti-info-circle" style="font-size:13px" aria-hidden="true"></i>
+        Subtitle file load කරලා නැහැ
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const wrap       = document.getElementById('player-wrap');
+const vid        = document.getElementById('vid');
+const dropOverlay= document.getElementById('drop-overlay');
+const vidInput   = document.getElementById('vid-file-input');
+const progWrap   = document.getElementById('progress-wrap');
+const progFill   = document.getElementById('progress-fill');
+const btnPlay    = document.getElementById('btn-play');
+const playIcon   = document.getElementById('play-icon');
+const skipBack   = document.getElementById('skip-back-wrap');
+const skipFwd    = document.getElementById('skip-fwd-wrap');
+const timeDisp   = document.getElementById('time-display');
+const btnMute    = document.getElementById('btn-mute');
+const volIcon    = document.getElementById('vol-icon');
+const volSlider  = document.getElementById('vol-slider');
+const btnFs      = document.getElementById('btn-fs');
+const fsIcon     = document.getElementById('fs-icon');
+const ccBadge    = document.getElementById('cc-badge');
+const ccPanel    = document.getElementById('cc-panel');
+const ccUploadBtn= document.getElementById('cc-upload-btn');
+const ccFileInput= document.getElementById('cc-file-input');
+const ccStatus   = document.getElementById('cc-status');
+
+let hasVideo = false;
+let ccTrackEl = null;
+
+function fmt(s) {
+  if (!s || isNaN(s)) return '0:00';
+  const t = Math.floor(s);
+  const m = Math.floor(t / 60);
+  const ss = String(t % 60).padStart(2, '0');
+  return m + ':' + ss;
+}
+
+// --- Load video ---
+function loadVideo(file) {
+  const url = URL.createObjectURL(file);
+  vid.src = url;
+  hasVideo = true;
+  dropOverlay.style.display = 'none';
+  vid.style.display = 'block';
+  wrap.classList.add('paused');
+  vid.load();
+}
+
+dropOverlay.addEventListener('click', () => vidInput.click());
+vidInput.addEventListener('change', e => { if (e.target.files[0]) loadVideo(e.target.files[0]); });
+
+wrap.addEventListener('dragover', e => { e.preventDefault(); dropOverlay.classList.add('drag-over'); });
+wrap.addEventListener('dragleave', e => { if (!wrap.contains(e.relatedTarget)) dropOverlay.classList.remove('drag-over'); });
+wrap.addEventListener('drop', e => {
+  e.preventDefault();
+  dropOverlay.classList.remove('drag-over');
+  const f = Array.from(e.dataTransfer.files).find(f => f.type.startsWith('video/'));
+  if (f) loadVideo(f);
+});
+
+// --- Play / Pause ---
+function syncPlayIcon() {
+  playIcon.className = vid.paused ? 'ti ti-player-play' : 'ti ti-player-pause';
+  wrap.classList.toggle('paused', vid.paused);
+}
+btnPlay.addEventListener('click', () => { if (!hasVideo) return; vid.paused ? vid.play() : vid.pause(); });
+vid.addEventListener('play', syncPlayIcon);
+vid.addEventListener('pause', syncPlayIcon);
+vid.addEventListener('ended', syncPlayIcon);
+
+// Double-click to fullscreen
+vid.addEventListener('dblclick', () => btnFs.click());
+
+// --- Progress ---
+vid.addEventListener('timeupdate', () => {
+  if (!vid.duration) return;
+  progFill.style.width = (vid.currentTime / vid.duration * 100) + '%';
+  timeDisp.textContent = fmt(vid.currentTime) + ' / ' + fmt(vid.duration);
+});
+
+let seeking = false;
+function seek(e) {
+  if (!vid.duration) return;
+  const rect = progWrap.getBoundingClientRect();
+  const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+  vid.currentTime = ratio * vid.duration;
+}
+progWrap.addEventListener('mousedown', e => { seeking = true; seek(e); });
+document.addEventListener('mousemove', e => { if (seeking) seek(e); });
+document.addEventListener('mouseup', () => { seeking = false; });
+
+// --- Skip ---
+skipBack.addEventListener('click', () => { vid.currentTime = Math.max(0, vid.currentTime - 10); });
+skipFwd.addEventListener('click', () => { vid.currentTime = Math.min(vid.duration || 0, vid.currentTime + 10); });
+skipBack.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') skipBack.click(); });
+skipFwd.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') skipFwd.click(); });
+
+// --- Volume ---
+btnMute.addEventListener('click', () => {
+  vid.muted = !vid.muted;
+  volIcon.className = vid.muted ? 'ti ti-volume-3' : (vid.volume < 0.5 ? 'ti ti-volume-2' : 'ti ti-volume');
+});
+volSlider.addEventListener('input', () => {
+  vid.volume = parseFloat(volSlider.value);
+  vid.muted = vid.volume === 0;
+  volIcon.className = (vid.muted || vid.volume === 0) ? 'ti ti-volume-3' : (vid.volume < 0.5 ? 'ti ti-volume-2' : 'ti ti-volume');
+});
+
+// --- Fullscreen ---
+btnFs.addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    wrap.requestFullscreen && wrap.requestFullscreen();
+  } else {
+    document.exitFullscreen && document.exitFullscreen();
+  }
+});
+document.addEventListener('fullscreenchange', () => {
+  fsIcon.className = document.fullscreenElement ? 'ti ti-minimize' : 'ti ti-maximize';
+});
+
+// --- CC Panel ---
+ccBadge.addEventListener('click', e => {
+  e.stopPropagation();
+  ccPanel.classList.toggle('open');
+});
+document.addEventListener('click', e => {
+  if (!ccPanel.contains(e.target) && e.target !== ccBadge) ccPanel.classList.remove('open');
+});
+
+ccUploadBtn.addEventListener('click', () => ccFileInput.click());
+
+function srtToVtt(srt) {
+  return 'WEBVTT\n\n' + srt
+    .replace(/\r\n/g, '\n')
+    .replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2')
+    .trim();
+}
+
+ccFileInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    let text = ev.target.result;
+    if (file.name.toLowerCase().endsWith('.srt')) text = srtToVtt(text);
+
+    const blob = new Blob([text], { type: 'text/vtt' });
+    const url = URL.createObjectURL(blob);
+
+    if (ccTrackEl) { try { vid.removeChild(ccTrackEl); } catch(_){} }
+    ccTrackEl = document.createElement('track');
+    ccTrackEl.kind = 'subtitles';
+    ccTrackEl.label = 'Subtitles';
+    ccTrackEl.srclang = 'si';
+    ccTrackEl.src = url;
+    ccTrackEl.default = true;
+    vid.appendChild(ccTrackEl);
+
+    setTimeout(() => {
+      if (vid.textTracks[0]) vid.textTracks[0].mode = 'showing';
+    }, 150);
+
+    ccStatus.innerHTML = '<i class="ti ti-check" style="font-size:13px"></i> Loaded: ' + file.name;
+    ccStatus.className = 'ok';
+    ccBadge.classList.add('active');
+    ccPanel.classList.remove('open');
+  };
+  reader.readAsText(file);
+});
+
+// --- Keyboard shortcuts ---
+document.addEventListener('keydown', e => {
+  const tag = document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  if (e.key === ' ' || e.key === 'k') { e.preventDefault(); if (hasVideo) { vid.paused ? vid.play() : vid.pause(); } }
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); vid.currentTime = Math.max(0, vid.currentTime - 10); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); vid.currentTime = Math.min(vid.duration || 0, vid.currentTime + 10); }
+  if (e.key === 'ArrowUp')    { e.preventDefault(); vid.volume = Math.min(1, vid.volume + 0.1); volSlider.value = vid.volume; }
+  if (e.key === 'ArrowDown')  { e.preventDefault(); vid.volume = Math.max(0, vid.volume - 0.1); volSlider.value = vid.volume; }
+  if (e.key === 'm' || e.key === 'M') btnMute.click();
+  if (e.key === 'f' || e.key === 'F') btnFs.click();
+});
+</script>
+</body>
+</html>
